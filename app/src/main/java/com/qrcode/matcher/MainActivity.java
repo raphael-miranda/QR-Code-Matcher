@@ -1,29 +1,38 @@
 package com.qrcode.matcher;
 
+import android.content.res.ColorStateList;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
-import android.util.Log;
+import android.util.TypedValue;
 import android.view.KeyEvent;
 import android.view.View;
 import android.widget.CheckBox;
-import android.widget.EditText;
 import android.widget.TextView;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.AppCompatButton;
+import androidx.core.content.ContextCompat;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
+
+import com.google.android.material.color.MaterialColors;
+import com.google.android.material.textfield.TextInputEditText;
+import com.google.android.material.textfield.TextInputLayout;
 
 public class MainActivity extends AppCompatActivity {
 
     private CheckBox checkboxManual;
     private TextView txtScanLabel;
-    private EditText txtCtNr, txtPartNr1, txtDNr, txtQtty1;
-    private EditText txtCName, txtPartNr2, txtCustN, txtQtty2, txtOrderNr;
+    private TextInputLayout txtCtNrField, txtPartNr1Field, txtDNrField, txtQtty1Field;
+    private TextInputEditText txtCtNr, txtPartNr1, txtDNr, txtQtty1;
+
+    private TextInputLayout txtCNameField, txtPartNr2Field, txtCustNField, txtQtty2Field, txtOrderNrField;
+    private TextInputEditText txtCName, txtPartNr2, txtCustN, txtQtty2, txtOrderNr;
+
     private AppCompatButton btnPlus1, btnPlus2;
     private AppCompatButton btnNext;
 
@@ -41,6 +50,17 @@ public class MainActivity extends AppCompatActivity {
         checkboxManual = findViewById(R.id.checkboxManual);
         txtScanLabel = findViewById(R.id.txtScanLabel);
 
+        txtCtNrField = findViewById(R.id.txtCtNrField);
+        txtPartNr1Field = findViewById(R.id.txtPartNr1Field);
+        txtDNrField = findViewById(R.id.txtDNrField);
+        txtQtty1Field = findViewById(R.id.txtQtty1Field);
+
+        txtCNameField = findViewById(R.id.txtCNameField);
+        txtPartNr2Field = findViewById(R.id.txtPartNr2Field);
+        txtCustNField = findViewById(R.id.txtCustNField);
+        txtQtty2Field = findViewById(R.id.txtQtty2Field);
+        txtOrderNrField = findViewById(R.id.txtOrderNrField);
+        
         txtCtNr = findViewById(R.id.txtCtNr);
         txtPartNr1 = findViewById(R.id.txtPartNr1);
         txtDNr = findViewById(R.id.txtDNr);
@@ -276,29 +296,51 @@ public class MainActivity extends AppCompatActivity {
         String strQtty1 = txtQtty1.getText().toString();
         String strQtty2 = txtQtty2.getText().toString();
 
+
+        ColorStateList greenColors = new ColorStateList(
+            new int[][]{
+                new int[]{android.R.attr.state_focused}, // Focused
+                new int[]{-android.R.attr.state_enabled}, // Disabled
+                new int[]{} // Default
+            },
+            new int[]{
+                Color.GREEN,
+                Color.GREEN,
+                Color.GREEN
+            }
+        );
+
+        ColorStateList redColors = new ColorStateList(
+                new int[][]{
+                        new int[]{android.R.attr.state_focused}, // Focused
+                        new int[]{-android.R.attr.state_enabled}, // Disabled
+                        new int[]{} // Default
+                },
+                new int[]{
+                        Color.RED,
+                        Color.RED,
+                        Color.RED
+                }
+        );
+
         int result = 0;
         if (strPartNr1.equals(strPartNr2)) {
             result += 1;
-            txtPartNr1.setBackgroundColor(Color.GREEN);
-            txtPartNr2.setBackgroundColor(Color.GREEN);
+            txtPartNr1Field.setBoxStrokeColorStateList(greenColors);
+            txtPartNr2Field.setBoxStrokeColorStateList(greenColors);
         } else {
-            txtPartNr1.setBackgroundColor(Color.RED);
-            txtPartNr2.setBackgroundColor(Color.RED);
+            txtPartNr1Field.setBoxStrokeColorStateList(redColors);
+            txtPartNr2Field.setBoxStrokeColorStateList(redColors);
         }
-        txtPartNr1.setTextColor(Color.WHITE);
-        txtPartNr2.setTextColor(Color.WHITE);
 
         if (strQtty1.equals(strQtty2)) {
             result += 1;
-            txtQtty1.setBackgroundColor(Color.GREEN);
-            txtQtty2.setBackgroundColor(Color.GREEN);
+            txtQtty1Field.setBoxStrokeColorStateList(greenColors);
+            txtQtty2Field.setBoxStrokeColorStateList(greenColors);
         } else {
-            txtQtty1.setBackgroundColor(Color.RED);
-            txtQtty2.setBackgroundColor(Color.RED);
+            txtQtty1Field.setBoxStrokeColorStateList(redColors);
+            txtQtty2Field.setBoxStrokeColorStateList(redColors);
         }
-
-        txtQtty1.setTextColor(Color.WHITE);
-        txtQtty2.setTextColor(Color.WHITE);
 
         if (result == 2) {
             btnNext.setEnabled(true);
@@ -343,14 +385,27 @@ public class MainActivity extends AppCompatActivity {
         txtQtty2.setText("");
         txtOrderNr.setText("");
 
-        txtPartNr1.setBackgroundResource(R.drawable.ed_bg);
-        txtPartNr2.setBackgroundResource(R.drawable.ed_bg);
-        txtQtty1.setBackgroundResource(R.drawable.ed_bg);
-        txtQtty2.setBackgroundResource(R.drawable.ed_bg);
-        txtPartNr1.setTextColor(Color.BLACK);
-        txtPartNr2.setTextColor(Color.BLACK);
-        txtQtty1.setTextColor(Color.BLACK);
-        txtQtty2.setTextColor(Color.BLACK);
+        // Or create manually based on theme attributes
+        int colorPrimary = MaterialColors.getColor(this, android.R.attr.colorPrimary, "DefaultPrimary");
+        int colorOnSurface = MaterialColors.getColor(this, android.R.attr.colorControlNormal, "DefaultOnSurface");
+
+        ColorStateList defaultStrokeColors = new ColorStateList(
+                new int[][]{
+                        new int[]{android.R.attr.state_focused}, // Focused
+                        new int[]{-android.R.attr.state_enabled}, // Disabled
+                        new int[]{} // Default
+                },
+                new int[]{
+                        colorPrimary,
+                        colorOnSurface,
+                        colorOnSurface
+                }
+        );
+
+        txtPartNr1Field.setBoxStrokeColorStateList(defaultStrokeColors);
+        txtPartNr2Field.setBoxStrokeColorStateList(defaultStrokeColors);
+        txtQtty1Field.setBoxStrokeColorStateList(defaultStrokeColors);
+        txtQtty2Field.setBoxStrokeColorStateList(defaultStrokeColors);
 
         btnNext.setEnabled(false);
         btnPlus1.setEnabled(false);

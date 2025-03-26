@@ -1,15 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
     <LinearLayout
         android:id="@+id/main"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         tools:context=".MainActivity"
-        android:orientation="vertical">
+        android:orientation="vertical"
+        android:paddingVertical="20dp">
 
         <RelativeLayout
             android:layout_width="match_parent"
@@ -99,123 +100,86 @@
                         android:textSize="18sp"/>
                 </LinearLayout>
 
-
-                <LinearLayout
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/txtCtNrField"
                     android:layout_width="match_parent"
-                    android:layout_height="50dp"
-                    android:padding="6dp"
-                    android:orientation="horizontal"
-                    android:gravity="center_vertical">
+                    android:layout_height="60dp"
+                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                    android:hint="@string/ct_nr"
+                    app:hintTextColor="#cc0000"
+                    android:layout_margin="6dp">
 
-                    <TextView
-                        android:layout_width="70dp"
-                        android:layout_height="wrap_content"
-                        android:fontFamily="sans-serif"
-                        android:text="@string/ct_nr"
-                        android:textColor="#000000"
-                        android:textSize="18sp"
-                        android:textStyle="normal" />
-
-                    <EditText
+                    <!--this is the actual edit text which takes the input-->
+                    <com.google.android.material.textfield.TextInputEditText
                         android:id="@+id/txtCtNr"
                         android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:background="@drawable/ed_bg"
-                        android:gravity="center"
+                        android:layout_height="wrap_content"
                         android:imeOptions="actionNext"
                         android:nextFocusForward="@+id/txtPartNr1"
-                        android:text=""
-                        android:textColor="#000000"
+                        android:textAlignment="center"
                         android:textSize="18sp"/>
-                </LinearLayout>
 
-                <LinearLayout
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/txtPartNr1Field"
                     android:layout_width="match_parent"
-                    android:layout_height="50dp"
-                    android:padding="6dp"
-                    android:orientation="horizontal"
-                    android:gravity="center_vertical">
+                    android:layout_height="60dp"
+                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                    android:hint="@string/part_nr"
+                    android:layout_margin="6dp">
 
-                    <TextView
-                        android:layout_width="70dp"
-                        android:layout_height="wrap_content"
-                        android:fontFamily="sans-serif"
-                        android:text="@string/part_nr"
-                        android:textColor="#000000"
-                        android:textSize="18sp"
-                        android:textStyle="normal" />
-
-                    <EditText
+                    <!--this is the actual edit text which takes the input-->
+                    <com.google.android.material.textfield.TextInputEditText
                         android:id="@+id/txtPartNr1"
                         android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:background="@drawable/ed_bg"
-                        android:gravity="center"
+                        android:layout_height="wrap_content"
                         android:imeOptions="actionNext"
                         android:nextFocusForward="@+id/txtDNr"
-                        android:text=""
-                        android:textColor="#000000"
+                        android:textAlignment="center"
                         android:textSize="18sp"/>
-                </LinearLayout>
 
-                <LinearLayout
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/txtDNrField"
                     android:layout_width="match_parent"
-                    android:layout_height="50dp"
-                    android:padding="6dp"
-                    android:orientation="horizontal"
-                    android:gravity="center_vertical">
+                    android:layout_height="60dp"
+                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                    android:hint="@string/d_nr"
+                    android:layout_margin="6dp">
 
-                    <TextView
-                        android:layout_width="70dp"
-                        android:layout_height="wrap_content"
-                        android:fontFamily="sans-serif"
-                        android:text="@string/d_nr"
-                        android:textColor="#000000"
-                        android:textSize="18sp"
-                        android:textStyle="normal" />
-
-                    <EditText
+                    <!--this is the actual edit text which takes the input-->
+                    <com.google.android.material.textfield.TextInputEditText
                         android:id="@+id/txtDNr"
                         android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:background="@drawable/ed_bg"
-                        android:gravity="center"
+                        android:layout_height="wrap_content"
                         android:imeOptions="actionNext"
                         android:nextFocusForward="@+id/txtQtty1"
-                        android:text=""
-                        android:textColor="#000000"
+                        android:textAlignment="center"
                         android:textSize="18sp"/>
-                </LinearLayout>
 
-                <LinearLayout
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/txtQtty1Field"
                     android:layout_width="match_parent"
-                    android:layout_height="50dp"
-                    android:padding="6dp"
-                    android:orientation="horizontal"
-                    android:gravity="center_vertical">
+                    android:layout_height="60dp"
+                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                    android:hint="@string/qtty"
+                    android:layout_margin="6dp">
 
-                    <TextView
-                        android:layout_width="70dp"
-                        android:layout_height="wrap_content"
-                        android:fontFamily="sans-serif"
-                        android:text="@string/qtty"
-                        android:textColor="#000000"
-                        android:textSize="18sp"
-                        android:textStyle="normal" />
-
-                    <EditText
+                    <com.google.android.material.textfield.TextInputEditText
                         android:id="@+id/txtQtty1"
                         android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:background="@drawable/ed_bg"
-                        android:gravity="center"
+                        android:layout_height="wrap_content"
                         android:inputType="number"
                         android:imeOptions="actionNext"
                         android:nextFocusForward="@+id/txtCName"
-                        android:text=""
-                        android:textColor="#000000"
+                        android:textAlignment="center"
                         android:textSize="18sp"/>
-                </LinearLayout>
+
+                </com.google.android.material.textfield.TextInputLayout>
 
             </LinearLayout>
 
@@ -252,150 +216,100 @@
                         android:textSize="18sp"/>
                 </LinearLayout>
 
-                <LinearLayout
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/txtCNameField"
                     android:layout_width="match_parent"
-                    android:layout_height="50dp"
-                    android:padding="6dp"
-                    android:orientation="horizontal"
-                    android:gravity="center_vertical">
+                    android:layout_height="60dp"
+                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                    android:hint="@string/c_name"
+                    android:layout_margin="6dp">
 
-                    <TextView
-                        android:layout_width="70dp"
-                        android:layout_height="wrap_content"
-                        android:fontFamily="sans-serif"
-                        android:text="@string/c_name"
-                        android:textColor="#000000"
-                        android:textSize="18sp"
-                        android:textStyle="normal" />
-
-                    <EditText
+                    <com.google.android.material.textfield.TextInputEditText
                         android:id="@+id/txtCName"
                         android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:background="@drawable/ed_bg"
-                        android:gravity="center"
+                        android:layout_height="wrap_content"
                         android:imeOptions="actionNext"
                         android:nextFocusForward="@+id/txtPartNr2"
-                        android:text=""
-                        android:textColor="#000000"
+                        android:textAlignment="center"
                         android:textSize="18sp"/>
-                </LinearLayout>
 
-                <LinearLayout
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/txtPartNr2Field"
                     android:layout_width="match_parent"
-                    android:layout_height="50dp"
-                    android:padding="6dp"
-                    android:orientation="horizontal"
-                    android:gravity="center_vertical">
+                    android:layout_height="60dp"
+                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                    android:hint="@string/part_nr"
+                    android:layout_margin="6dp">
 
-                    <TextView
-                        android:layout_width="70dp"
-                        android:layout_height="wrap_content"
-                        android:fontFamily="sans-serif"
-                        android:text="@string/part_nr"
-                        android:textColor="#000000"
-                        android:textSize="18sp"
-                        android:textStyle="normal" />
-
-                    <EditText
+                    <com.google.android.material.textfield.TextInputEditText
                         android:id="@+id/txtPartNr2"
                         android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:background="@drawable/ed_bg"
-                        android:gravity="center"
+                        android:layout_height="wrap_content"
                         android:imeOptions="actionNext"
                         android:nextFocusForward="@+id/txtCustN"
-                        android:text=""
-                        android:textColor="#000000"
+                        android:textAlignment="center"
                         android:textSize="18sp"/>
-                </LinearLayout>
 
-                <LinearLayout
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/txtCustNField"
                     android:layout_width="match_parent"
-                    android:layout_height="50dp"
-                    android:padding="6dp"
-                    android:orientation="horizontal"
-                    android:gravity="center_vertical">
+                    android:layout_height="60dp"
+                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                    android:hint="@string/cust_n"
+                    android:layout_margin="6dp">
 
-                    <TextView
-                        android:layout_width="70dp"
-                        android:layout_height="wrap_content"
-                        android:fontFamily="sans-serif"
-                        android:text="@string/cust_n"
-                        android:textColor="#000000"
-                        android:textSize="18sp"
-                        android:textStyle="normal" />
-
-                    <EditText
+                    <com.google.android.material.textfield.TextInputEditText
                         android:id="@+id/txtCustN"
                         android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:background="@drawable/ed_bg"
-                        android:gravity="center"
+                        android:layout_height="wrap_content"
                         android:imeOptions="actionNext"
                         android:nextFocusForward="@+id/txtQtty2"
-                        android:text=""
-                        android:textColor="#000000"
+                        android:textAlignment="center"
                         android:textSize="18sp"/>
-                </LinearLayout>
 
-                <LinearLayout
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/txtQtty2Field"
                     android:layout_width="match_parent"
-                    android:layout_height="50dp"
-                    android:padding="6dp"
-                    android:orientation="horizontal"
-                    android:gravity="center_vertical">
+                    android:layout_height="60dp"
+                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                    android:hint="@string/qtty"
+                    android:layout_margin="6dp">
 
-                    <TextView
-                        android:layout_width="70dp"
-                        android:layout_height="wrap_content"
-                        android:fontFamily="sans-serif"
-                        android:text="@string/qtty"
-                        android:textColor="#000000"
-                        android:textSize="18sp"
-                        android:textStyle="normal" />
-
-                    <EditText
+                    <com.google.android.material.textfield.TextInputEditText
                         android:id="@+id/txtQtty2"
                         android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:background="@drawable/ed_bg"
-                        android:gravity="center"
+                        android:layout_height="wrap_content"
                         android:inputType="number"
                         android:imeOptions="actionNext"
                         android:nextFocusForward="@+id/txtOrderNr"
-                        android:text=""
-                        android:textColor="#000000"
+                        android:textAlignment="center"
                         android:textSize="18sp"/>
-                </LinearLayout>
 
-                <LinearLayout
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/txtOrderNrField"
                     android:layout_width="match_parent"
-                    android:layout_height="50dp"
-                    android:padding="6dp"
-                    android:orientation="horizontal"
-                    android:gravity="center_vertical">
+                    android:layout_height="60dp"
+                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                    android:hint="@string/order_nr"
+                    android:layout_margin="6dp">
 
-                    <TextView
-                        android:layout_width="70dp"
-                        android:layout_height="wrap_content"
-                        android:fontFamily="sans-serif"
-                        android:text="@string/order_nr"
-                        android:textColor="#000000"
-                        android:textSize="18sp"
-                        android:textStyle="normal" />
-
-                    <EditText
+                    <com.google.android.material.textfield.TextInputEditText
                         android:id="@+id/txtOrderNr"
                         android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:background="@drawable/ed_bg"
-                        android:gravity="center"
+                        android:layout_height="wrap_content"
                         android:imeOptions="actionDone"
-                        android:text=""
-                        android:textColor="#000000"
+                        android:textAlignment="center"
                         android:textSize="18sp"/>
-                </LinearLayout>
+
+                </com.google.android.material.textfield.TextInputLayout>
 
             </LinearLayout>
 
