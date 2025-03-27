@@ -62,10 +62,10 @@ public class MainActivity extends AppCompatActivity {
 
     private TextView txtScanLabel;
     private TextView txtScannedNumber;
-    private TextInputLayout txtCtNrField, txtPartNr1Field, txtDNrField, txtQtty1Field;
+    private TextInputLayout txtPartNr1Field, txtQtty1Field;
     private TextInputEditText txtCtNr, txtPartNr1, txtDNr, txtQtty1;
 
-    private TextInputLayout txtCNameField, txtPartNr2Field, txtCustNField, txtQtty2Field, txtOrderNrField;
+    private TextInputLayout txtPartNr2Field, txtQtty2Field;
     private TextInputEditText txtCName, txtPartNr2, txtCustN, txtQtty2, txtOrderNr;
 
     private AppCompatButton btnPlus1, btnPlus2;
@@ -88,17 +88,12 @@ public class MainActivity extends AppCompatActivity {
         txtScanLabel = findViewById(R.id.txtScanLabel);
         txtScannedNumber = findViewById(R.id.txtScannedNumber);
 
-        txtCtNrField = findViewById(R.id.txtCtNrField);
         txtPartNr1Field = findViewById(R.id.txtPartNr1Field);
-        txtDNrField = findViewById(R.id.txtDNrField);
         txtQtty1Field = findViewById(R.id.txtQtty1Field);
 
-        txtCNameField = findViewById(R.id.txtCNameField);
         txtPartNr2Field = findViewById(R.id.txtPartNr2Field);
-        txtCustNField = findViewById(R.id.txtCustNField);
         txtQtty2Field = findViewById(R.id.txtQtty2Field);
-        txtOrderNrField = findViewById(R.id.txtOrderNrField);
-        
+
         txtCtNr = findViewById(R.id.txtCtNr);
         txtPartNr1 = findViewById(R.id.txtPartNr1);
         txtDNr = findViewById(R.id.txtDNr);
@@ -526,6 +521,16 @@ public class MainActivity extends AppCompatActivity {
                 .setNegativeButton("Yes", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
+                        if (upload()) {
+                            // set scanned number to 0
+                            SharedPreferences.Editor editor = getSharedPreferences(getPackageName(), MODE_PRIVATE).edit();
+                            editor.putInt(SCANNED_NUMBER, 0);
+                            editor.apply();
+                            txtScannedNumber.setText(String.valueOf(0));
+
+                            reset();
+                        }
+
                         dialogInterface.dismiss();
                     }
                 })
@@ -563,7 +568,12 @@ public class MainActivity extends AppCompatActivity {
         String strData = smallLabel + bigLabel;
 
         saveData(strData);
-//        increaseScannedNumber();
+
+        // increase Scanned Number
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putInt(SCANNED_NUMBER, scannedNumber + 1);
+        editor.apply();
+        txtScannedNumber.setText(String.valueOf(scannedNumber + 1));
 
         reset();
     }
@@ -574,11 +584,10 @@ public class MainActivity extends AppCompatActivity {
 
         SimpleDateFormat format = new SimpleDateFormat("ddMMyyyy", Locale.getDefault());
         String strDate = format.format(new Date());
-        String fileName = String.format(Locale.getDefault(), "SCAN%s-%03d.txt", strDate, scannedNumber + 1);
+        String fileName = String.format(Locale.getDefault(), "SCAN%s.txt", strDate);
 
         if (Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)) {
             File dir = Utils.getDocumentsDirectory(this);
-
             File file = new File(dir, fileName);
             try (FileWriter writer = new FileWriter(file, true)) {
                 writer.append(strData);
@@ -656,9 +665,19 @@ public class MainActivity extends AppCompatActivity {
                     .show();
             return false;
         }
+
+
+        SimpleDateFormat format = new SimpleDateFormat("ddMMyyyy", Locale.getDefault());
+        String strDate = format.format(new Date());
+        String fileName = String.format(Locale.getDefault(), "SCAN%s.txt", strDate);
+
+        File dir = Utils.getDocumentsDirectory(this);
+        File file = new File(dir, fileName);
+        String localPath = file.getAbsolutePath();
+
         new Thread(() -> {
             String remoteDir = "/uploads/";
-            String localPath = "/storage/emulated/0/Download/myfile.jpg";
+//            String localPath = "/storage/emulated/0/Download/myfile.jpg";
 
             boolean uploaded = FTPUploader.uploadFile(
                     host, username, password, port, remoteDir, localPath);
