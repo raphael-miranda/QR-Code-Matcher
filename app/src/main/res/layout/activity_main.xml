@@ -62,6 +62,35 @@
 
         <LinearLayout
             android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:padding="6dp"
+            android:orientation="horizontal"
+            android:gravity="center">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="sans-serif"
+                android:text="@string/scanned"
+                android:textColor="#000000"
+                android:textSize="18sp"
+                android:textStyle="normal" />
+
+            <TextView
+                android:layout_width="80dp"
+                android:layout_height="match_parent"
+                android:layout_marginStart="30dp"
+                android:background="@drawable/text_bg"
+                android:gravity="center"
+                android:nextFocusForward="@+id/tvPNr"
+                android:text="0"
+                android:textColor="#ffffff"
+                android:textSize="18sp"/>
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:baselineAligned="false"
             android:orientation="horizontal"
@@ -71,34 +100,17 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:orientation="vertical">
+                android:orientation="vertical"
+                android:gravity="center">
 
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="50dp"
-                    android:padding="6dp"
-                    android:orientation="horizontal"
-                    android:gravity="center_vertical">
-
-                    <TextView
-                        android:layout_width="100dp"
-                        android:layout_height="wrap_content"
-                        android:fontFamily="sans-serif"
-                        android:text="@string/scanned"
-                        android:textColor="#000000"
-                        android:textSize="18sp"
-                        android:textStyle="normal" />
-
-                    <TextView
-                        android:layout_width="80dp"
-                        android:layout_height="match_parent"
-                        android:background="@drawable/text_bg"
-                        android:gravity="center"
-                        android:nextFocusForward="@+id/tvPNr"
-                        android:text="0"
-                        android:textColor="#ffffff"
-                        android:textSize="18sp"/>
-                </LinearLayout>
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="sans-serif"
+                    android:text="@string/small_label"
+                    android:textColor="#000000"
+                    android:textSize="18sp"
+                    android:textStyle="bold"/>
 
                 <com.google.android.material.textfield.TextInputLayout
                     android:id="@+id/txtCtNrField"
@@ -107,7 +119,7 @@
                     style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                     android:hint="@string/ct_nr"
                     app:hintTextColor="#cc0000"
-                    android:layout_margin="6dp">
+                    android:layout_marginHorizontal="6dp">
 
                     <!--this is the actual edit text which takes the input-->
                     <com.google.android.material.textfield.TextInputEditText
@@ -127,7 +139,7 @@
                     android:layout_height="60dp"
                     style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                     android:hint="@string/part_nr"
-                    android:layout_margin="6dp">
+                    android:layout_marginHorizontal="6dp">
 
                     <!--this is the actual edit text which takes the input-->
                     <com.google.android.material.textfield.TextInputEditText
@@ -147,7 +159,7 @@
                     android:layout_height="60dp"
                     style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                     android:hint="@string/d_nr"
-                    android:layout_margin="6dp">
+                    android:layout_marginHorizontal="6dp">
 
                     <!--this is the actual edit text which takes the input-->
                     <com.google.android.material.textfield.TextInputEditText
@@ -167,7 +179,7 @@
                     android:layout_height="60dp"
                     style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                     android:hint="@string/qtty"
-                    android:layout_margin="6dp">
+                    android:layout_marginHorizontal="6dp">
 
                     <com.google.android.material.textfield.TextInputEditText
                         android:id="@+id/txtQtty1"
@@ -187,34 +199,17 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:orientation="vertical">
+                android:orientation="vertical"
+                android:gravity="center">
 
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="50dp"
-                    android:padding="6dp"
-                    android:orientation="horizontal"
-                    android:gravity="center_vertical">
-
-                    <TextView
-                        android:layout_width="100dp"
-                        android:layout_height="wrap_content"
-                        android:fontFamily="sans-serif"
-                        android:text="@string/scanned"
-                        android:textColor="#000000"
-                        android:textSize="18sp"
-                        android:textStyle="normal" />
-
-                    <TextView
-                        android:layout_width="80dp"
-                        android:layout_height="match_parent"
-                        android:background="@drawable/text_bg"
-                        android:gravity="center"
-                        android:nextFocusForward="@+id/tvPNr"
-                        android:text="0"
-                        android:textColor="#ffffff"
-                        android:textSize="18sp"/>
-                </LinearLayout>
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="sans-serif"
+                    android:text="@string/big_label"
+                    android:textColor="#000000"
+                    android:textSize="18sp"
+                    android:textStyle="bold"/>
 
                 <com.google.android.material.textfield.TextInputLayout
                     android:id="@+id/txtCNameField"
@@ -222,7 +217,7 @@
                     android:layout_height="60dp"
                     style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                     android:hint="@string/c_name"
-                    android:layout_margin="6dp">
+                    android:layout_marginHorizontal="6dp">
 
                     <com.google.android.material.textfield.TextInputEditText
                         android:id="@+id/txtCName"
@@ -241,7 +236,7 @@
                     android:layout_height="60dp"
                     style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                     android:hint="@string/part_nr"
-                    android:layout_margin="6dp">
+                    android:layout_marginHorizontal="6dp">
 
                     <com.google.android.material.textfield.TextInputEditText
                         android:id="@+id/txtPartNr2"
@@ -260,7 +255,7 @@
                     android:layout_height="60dp"
                     style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                     android:hint="@string/cust_n"
-                    android:layout_margin="6dp">
+                    android:layout_marginHorizontal="6dp">
 
                     <com.google.android.material.textfield.TextInputEditText
                         android:id="@+id/txtCustN"
@@ -279,7 +274,7 @@
                     android:layout_height="60dp"
                     style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                     android:hint="@string/qtty"
-                    android:layout_margin="6dp">
+                    android:layout_marginHorizontal="6dp">
 
                     <com.google.android.material.textfield.TextInputEditText
                         android:id="@+id/txtQtty2"
@@ -299,7 +294,7 @@
                     android:layout_height="60dp"
                     style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                     android:hint="@string/order_nr"
-                    android:layout_margin="6dp">
+                    android:layout_marginHorizontal="6dp">
 
                     <com.google.android.material.textfield.TextInputEditText
                         android:id="@+id/txtOrderNr"
