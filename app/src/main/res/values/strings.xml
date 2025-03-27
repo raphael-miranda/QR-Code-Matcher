@@ -22,4 +22,13 @@
     <string name="new_button">New</string>
     <string name="reset">Reset</string>
     <string name="quit">Quit</string>
+
+    <!--  Settings Dialog -->
+    <string name="settings_title">FTP Server</string>
+    <string name="host">Host Address</string>
+    <string name="port">Port Number</string>
+    <string name="username">User Name</string>
+    <string name="password">Password</string>
+    <string name="save">Save</string>
+    <string name="cancel">Cancel</string>
 </resources>

@@ -40,5 +40,6 @@ dependencies {
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)
-    implementation (libs.material)
+    implementation(libs.material)
+    implementation("commons-net:commons-net:3.8.0")
 }

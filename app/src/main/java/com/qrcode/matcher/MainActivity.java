@@ -1,29 +1,39 @@
 package com.qrcode.matcher;
 
+import android.content.DialogInterface;
+import android.content.SharedPreferences;
 import android.content.res.ColorStateList;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
-import android.util.TypedValue;
 import android.view.KeyEvent;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.CheckBox;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.AppCompatButton;
-import androidx.core.content.ContextCompat;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
+import com.google.android.material.button.MaterialButton;
 import com.google.android.material.color.MaterialColors;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
 
 public class MainActivity extends AppCompatActivity {
+
+    public static final String FTP_HOST = "ftp_host";
+    public static final String FTP_PORT = "ftp_port";
+    public static final String FTP_USERNAME = "ftp_username";
+    public static final String FTP_PASSWORD = "ftp_password";
 
     private CheckBox checkboxManual;
     private TextView txtScanLabel;
@@ -104,7 +114,7 @@ public class MainActivity extends AppCompatActivity {
         btnNew.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-
+                onNew();
             }
         });
 
@@ -118,13 +128,66 @@ public class MainActivity extends AppCompatActivity {
         findViewById(R.id.btnSettings).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-
+                showSettingsDialog();
             }
         });
 
         checkManual();
         initLeftScan();
         initRightScan();
+    }
+
+    private void showSettingsDialog() {
+        MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(this);
+        LayoutInflater inflater = getLayoutInflater();
+        View dialogView = inflater.inflate(R.layout.dialog_settings, null);
+        builder.setView(dialogView)
+                .setCancelable(true);
+        AlertDialog dialog = builder.create();
+
+        TextInputEditText txtHost = dialogView.findViewById(R.id.txtHostAddress);
+        TextInputEditText txtPortNumber = dialogView.findViewById(R.id.txtPortNumber);
+        TextInputEditText txtUserName = dialogView.findViewById(R.id.txtUserName);
+        TextInputEditText txtPassword = dialogView.findViewById(R.id.txtPassword);
+
+        MaterialButton btnSave = dialogView.findViewById(R.id.btnSave);
+        MaterialButton btnCancel = dialogView.findViewById(R.id.btnCancel);
+
+        SharedPreferences sharedPreferences = getSharedPreferences(getPackageName(), MODE_PRIVATE);
+        txtHost.setText(sharedPreferences.getString(FTP_HOST, ""));
+        txtPortNumber.setText(sharedPreferences.getString(FTP_PORT, ""));
+        txtUserName.setText(sharedPreferences.getString(FTP_USERNAME, ""));
+        txtPassword.setText(sharedPreferences.getString(FTP_PASSWORD, ""));
+
+        btnSave.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+
+                String hostAddress = txtHost.getText().toString();
+                String portNumber = txtPortNumber.getText().toString();
+                String username = txtUserName.getText().toString();
+                String password = txtPassword.getText().toString();
+
+                SharedPreferences sharedPreferences = getSharedPreferences(getPackageName(), MODE_PRIVATE);
+                SharedPreferences.Editor editor = sharedPreferences.edit();
+                editor.putString(FTP_HOST, hostAddress);
+                editor.putString(FTP_PORT, portNumber);
+                editor.putString(FTP_USERNAME, username);
+                editor.putString(FTP_PASSWORD, password);
+                editor.apply();
+
+                dialog.dismiss();
+            }
+        });
+
+        btnCancel.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                dialog.dismiss();
+            }
+        });
+
+        dialog.show();
     }
 
     private void checkManual() {
@@ -361,6 +424,25 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    private void onNew() {
+        new MaterialAlertDialogBuilder(this)
+                .setTitle("New")
+                .setMessage("Are you sure to create new one?")
+                .setNegativeButton("Yes", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        dialogInterface.dismiss();
+                    }
+                })
+                .setPositiveButton("No", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        dialogInterface.dismiss();
+                    }
+                })
+                .show();
+    }
+
     private void next() {
         // upload
 
@@ -410,5 +492,27 @@ public class MainActivity extends AppCompatActivity {
         btnNext.setEnabled(false);
         btnPlus1.setEnabled(false);
         btnPlus2.setEnabled(false);
+    }
+
+    private void upload() {
+        new Thread(() -> {
+            String host = "ftp.yourserver.com";
+            String username = "your_username";
+            String password = "your_password";
+            int port = 21; // Default FTP port
+            String remoteDir = "/uploads/";
+            String localPath = "/storage/emulated/0/Download/myfile.jpg";
+
+            boolean uploaded = FTPUploader.uploadFile(
+                    host, username, password, port, remoteDir, localPath);
+
+            runOnUiThread(() -> {
+                if (uploaded) {
+                    Toast.makeText(this, "File uploaded successfully", Toast.LENGTH_SHORT).show();
+                } else {
+                    Toast.makeText(this, "Upload failed", Toast.LENGTH_SHORT).show();
+                }
+            });
+        }).start();
     }
 }
