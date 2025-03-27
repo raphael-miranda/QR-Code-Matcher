@@ -17,24 +17,6 @@
             android:layout_height="wrap_content"
             android:gravity="center_vertical">
 
-            <CheckBox
-                android:id="@+id/checkboxManual"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:nextFocusForward="@id/txtCtNr"
-                android:layout_centerVertical="true"/>
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_toEndOf="@id/checkboxManual"
-                android:layout_centerVertical="true"
-                android:fontFamily="sans-serif"
-                android:text="@string/manual"
-                android:textColor="#000000"
-                android:textSize="18sp"
-                android:textStyle="normal" />
-
             <TextView
                 android:id="@+id/txtScanLabel"
                 android:layout_width="wrap_content"
@@ -77,6 +59,7 @@
                 android:textStyle="normal" />
 
             <TextView
+                android:id="@+id/txtScannedNumber"
                 android:layout_width="80dp"
                 android:layout_height="match_parent"
                 android:layout_marginStart="30dp"
@@ -330,8 +313,8 @@
 
                 <androidx.appcompat.widget.AppCompatButton
                     android:id="@+id/btnPlus1"
-                    android:layout_width="45dp"
-                    android:layout_height="45dp"
+                    android:layout_width="50dp"
+                    android:layout_height="50dp"
                     android:layout_alignParentEnd="true"
                     android:layout_marginStart="10dp"
                     android:layout_marginEnd="6dp"
@@ -354,8 +337,8 @@
 
                 <androidx.appcompat.widget.AppCompatButton
                     android:id="@+id/btnPlus2"
-                    android:layout_width="45dp"
-                    android:layout_height="45dp"
+                    android:layout_width="50dp"
+                    android:layout_height="50dp"
                     android:layout_alignParentEnd="true"
                     android:layout_marginStart="10dp"
                     android:text="+"
@@ -368,7 +351,8 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
-            android:padding="10dp">
+            android:paddingHorizontal="10dp"
+            android:paddingVertical="4dp">
 
             <androidx.appcompat.widget.AppCompatButton
                 android:id="@+id/btnViewData"
@@ -397,7 +381,8 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
-            android:padding="10dp">
+            android:paddingHorizontal="10dp"
+            android:paddingVertical="4dp">
 
             <androidx.appcompat.widget.AppCompatButton
                 android:id="@+id/btnNew"

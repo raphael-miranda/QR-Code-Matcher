@@ -1,12 +1,20 @@
 package com.qrcode.matcher;
 
+import android.Manifest;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.content.res.ColorStateList;
 import android.graphics.Color;
+import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
+import android.provider.Settings;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Patterns;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -15,6 +23,8 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.AppCompatButton;
@@ -27,16 +37,31 @@ import com.google.android.material.color.MaterialColors;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
+import com.karumi.dexter.Dexter;
+import com.karumi.dexter.PermissionToken;
+import com.karumi.dexter.listener.PermissionDeniedResponse;
+import com.karumi.dexter.listener.PermissionGrantedResponse;
+import com.karumi.dexter.listener.PermissionRequest;
+import com.karumi.dexter.listener.single.PermissionListener;
+
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
 
 public class MainActivity extends AppCompatActivity {
 
-    public static final String FTP_HOST = "ftp_host";
-    public static final String FTP_PORT = "ftp_port";
-    public static final String FTP_USERNAME = "ftp_username";
-    public static final String FTP_PASSWORD = "ftp_password";
+    private static final String FTP_HOST = "ftp_host";
+    private static final String FTP_PORT = "ftp_port";
+    private static final String FTP_USERNAME = "ftp_username";
+    private static final String FTP_PASSWORD = "ftp_password";
+    private static final String IS_MANUAL = "is_manual";
+    private static final String SCANNED_NUMBER = "scanned_number";
 
-    private CheckBox checkboxManual;
     private TextView txtScanLabel;
+    private TextView txtScannedNumber;
     private TextInputLayout txtCtNrField, txtPartNr1Field, txtDNrField, txtQtty1Field;
     private TextInputEditText txtCtNr, txtPartNr1, txtDNr, txtQtty1;
 
@@ -45,6 +70,9 @@ public class MainActivity extends AppCompatActivity {
 
     private AppCompatButton btnPlus1, btnPlus2;
     private AppCompatButton btnNext;
+
+    private ActivityResultLauncher<String> storagePermissionLauncher;
+    private ActivityResultLauncher<Intent> manageStorageLauncher;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -57,8 +85,8 @@ public class MainActivity extends AppCompatActivity {
             return insets;
         });
 
-        checkboxManual = findViewById(R.id.checkboxManual);
         txtScanLabel = findViewById(R.id.txtScanLabel);
+        txtScannedNumber = findViewById(R.id.txtScannedNumber);
 
         txtCtNrField = findViewById(R.id.txtCtNrField);
         txtPartNr1Field = findViewById(R.id.txtPartNr1Field);
@@ -85,12 +113,9 @@ public class MainActivity extends AppCompatActivity {
         btnPlus1 = findViewById(R.id.btnPlus1);
         btnPlus2 = findViewById(R.id.btnPlus2);
 
-        checkboxManual.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                checkManual();
-            }
-        });
+        SharedPreferences sharedPreferences = getSharedPreferences(getPackageName(), MODE_PRIVATE);
+        int scannedNumber = sharedPreferences.getInt(SCANNED_NUMBER, 0);
+        txtScannedNumber.setText(String.valueOf(scannedNumber));
 
         AppCompatButton btnViewData = findViewById(R.id.btnViewData);
         btnNext = findViewById(R.id.btnNext);
@@ -135,6 +160,65 @@ public class MainActivity extends AppCompatActivity {
         checkManual();
         initLeftScan();
         initRightScan();
+
+        storagePermissionLauncher = registerForActivityResult(
+                new ActivityResultContracts.RequestPermission(),
+                isGranted -> {
+                    if (isGranted) {
+                        Toast.makeText(this, "Storage Permission Allowed", Toast.LENGTH_SHORT).show();
+                    } else {
+                        Toast.makeText(this, "Storage Permission Denied", Toast.LENGTH_SHORT).show();
+                    }
+                });
+
+        manageStorageLauncher = registerForActivityResult(
+                new ActivityResultContracts.StartActivityForResult(),
+                result -> {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                        if (Environment.isExternalStorageManager()) {
+                            Toast.makeText(this, "Storage Permission Allowed", Toast.LENGTH_SHORT).show();
+                        } else {
+                            Toast.makeText(this, "Manage Storage Permission Denied", Toast.LENGTH_SHORT).show();
+                        }
+                    }
+                });
+
+        checkPermissions();
+    }
+
+    private void checkPermissions() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (checkSelfPermission(android.Manifest.permission.READ_MEDIA_IMAGES) == PackageManager.PERMISSION_GRANTED) {
+
+            } else {
+                storagePermissionLauncher.launch(android.Manifest.permission.READ_MEDIA_IMAGES);
+            }
+
+        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            if (!android.os.Environment.isExternalStorageManager()) {
+                Intent intent = new Intent(Settings.ACTION_MANAGE_ALL_FILES_ACCESS_PERMISSION, Uri.parse("package:" + getPackageName()));
+                manageStorageLauncher.launch(intent);
+            }
+        } else {
+            Dexter.withContext(getApplicationContext())
+                    .withPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                    .withListener(new PermissionListener() {
+                        @Override
+                        public void onPermissionGranted(PermissionGrantedResponse permissionGrantedResponse) {
+
+                        }
+
+                        @Override
+                        public void onPermissionDenied(PermissionDeniedResponse permissionDeniedResponse) {
+
+                        }
+
+                        @Override
+                        public void onPermissionRationaleShouldBeShown(PermissionRequest permissionRequest, PermissionToken permissionToken) {
+                            permissionToken.continuePermissionRequest();
+                        }
+                    }).check();
+        }
     }
 
     private void showSettingsDialog() {
@@ -149,15 +233,17 @@ public class MainActivity extends AppCompatActivity {
         TextInputEditText txtPortNumber = dialogView.findViewById(R.id.txtPortNumber);
         TextInputEditText txtUserName = dialogView.findViewById(R.id.txtUserName);
         TextInputEditText txtPassword = dialogView.findViewById(R.id.txtPassword);
+        CheckBox checkboxManual = dialogView.findViewById(R.id.checkboxManual);
 
         MaterialButton btnSave = dialogView.findViewById(R.id.btnSave);
         MaterialButton btnCancel = dialogView.findViewById(R.id.btnCancel);
 
         SharedPreferences sharedPreferences = getSharedPreferences(getPackageName(), MODE_PRIVATE);
         txtHost.setText(sharedPreferences.getString(FTP_HOST, ""));
-        txtPortNumber.setText(sharedPreferences.getString(FTP_PORT, ""));
+        txtPortNumber.setText(String.valueOf(sharedPreferences.getInt(FTP_PORT, 21)));
         txtUserName.setText(sharedPreferences.getString(FTP_USERNAME, ""));
         txtPassword.setText(sharedPreferences.getString(FTP_PASSWORD, ""));
+        checkboxManual.setChecked(sharedPreferences.getBoolean(IS_MANUAL, false));
 
         btnSave.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -165,16 +251,24 @@ public class MainActivity extends AppCompatActivity {
 
                 String hostAddress = txtHost.getText().toString();
                 String portNumber = txtPortNumber.getText().toString();
+                int port = 0;
+                if (!portNumber.isEmpty()) {
+                    port = Integer.parseInt(portNumber);
+                }
                 String username = txtUserName.getText().toString();
                 String password = txtPassword.getText().toString();
+                boolean isManual = checkboxManual.isChecked();
 
                 SharedPreferences sharedPreferences = getSharedPreferences(getPackageName(), MODE_PRIVATE);
                 SharedPreferences.Editor editor = sharedPreferences.edit();
                 editor.putString(FTP_HOST, hostAddress);
-                editor.putString(FTP_PORT, portNumber);
+                editor.putInt(FTP_PORT, port);
                 editor.putString(FTP_USERNAME, username);
                 editor.putString(FTP_PASSWORD, password);
+                editor.putBoolean(IS_MANUAL, isManual);
                 editor.apply();
+
+                checkManual();
 
                 dialog.dismiss();
             }
@@ -191,7 +285,9 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void checkManual() {
-        if (checkboxManual.isChecked()) {
+        SharedPreferences sharedPreferences = getSharedPreferences(getPackageName(), MODE_PRIVATE);
+        boolean isManual = sharedPreferences.getBoolean(IS_MANUAL, false);
+        if (isManual) {
             txtCtNr.setEnabled(true);
             txtPartNr1.setEnabled(true);
             txtDNr.setEnabled(true);
@@ -267,7 +363,6 @@ public class MainActivity extends AppCompatActivity {
 
     private void initRightScan() {
         txtCName.setFocusable(true);
-        txtCName.requestFocus();
 
         txtCName.post(new Runnable() {
             @Override
@@ -444,14 +539,60 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void next() {
-        // upload
+        SharedPreferences sharedPreferences = getSharedPreferences(getPackageName(), MODE_PRIVATE);
+        int scannedNumber = sharedPreferences.getInt(SCANNED_NUMBER, 0);
 
+        String ctNr = txtCtNr.getText().toString();
+        String partNr1 = txtPartNr1.getText().toString();
+        String dNr = txtDNr.getText().toString();
+        String qtty1 = txtQtty1.getText().toString();
+        String smallLabel = String.format(Locale.getDefault(),
+                "%-11s ; SCAN%03d ; %-12s ; %-14s ; %-14s ; %-12s;\n",
+                "SmallLabel", scannedNumber + 1, ctNr, partNr1, dNr, qtty1);
+
+        String cName = txtCName.getText().toString();
+        String partNr2 = txtPartNr2.getText().toString();
+        String custN = txtCustN.getText().toString();
+        String qtty2 = txtQtty2.getText().toString();
+        String orderNr = txtOrderNr.getText().toString();
+
+        String bigLabel = String.format(Locale.getDefault(),
+                "%-11s ; SCAN%03d ; %-12s ; %-14s ; %-14s ; %-12s; %-20s;\n",
+                "BigLabel", scannedNumber + 1, cName, partNr2, custN, qtty2, orderNr);
+
+        String strData = smallLabel + bigLabel;
+
+        saveData(strData);
+//        increaseScannedNumber();
 
         reset();
     }
 
+    private void saveData(String strData) {
+        SharedPreferences sharedPreferences = getSharedPreferences(getPackageName(), MODE_PRIVATE);
+        int scannedNumber = sharedPreferences.getInt(SCANNED_NUMBER, 0);
+
+        SimpleDateFormat format = new SimpleDateFormat("ddMMyyyy", Locale.getDefault());
+        String strDate = format.format(new Date());
+        String fileName = String.format(Locale.getDefault(), "SCAN%s-%03d.txt", strDate, scannedNumber + 1);
+
+        if (Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)) {
+            File dir = Utils.getDocumentsDirectory(this);
+
+            File file = new File(dir, fileName);
+            try (FileWriter writer = new FileWriter(file, true)) {
+                writer.append(strData);
+                System.out.println("File saved to: " + file.getAbsolutePath());
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        } else {
+            System.out.println("External storage not available.");
+        }
+
+    }
+
     private void reset() {
-        checkboxManual.setChecked(false);
         txtScanLabel.setText(getString(R.string.scan_label));
         txtScanLabel.setBackgroundColor(Color.TRANSPARENT);
         txtScanLabel.setTextColor(Color.BLACK);
@@ -494,12 +635,28 @@ public class MainActivity extends AppCompatActivity {
         btnPlus2.setEnabled(false);
     }
 
-    private void upload() {
+    private boolean upload() {
+
+        SharedPreferences sharedPreferences = getSharedPreferences(getPackageName(), MODE_PRIVATE);
+        String host = sharedPreferences.getString(FTP_HOST, "");
+        String username = sharedPreferences.getString(FTP_USERNAME, "");
+        String password = sharedPreferences.getString(FTP_PASSWORD, "");
+        int port = sharedPreferences.getInt(FTP_PORT, 21); // Default FTP port = 21
+
+        if (host.isEmpty() || !isValidUrl(host) || !isValidPort(port)) {
+            new MaterialAlertDialogBuilder(this)
+                    .setTitle("Error")
+                    .setMessage("Please set valid FTP server url and port number in Settings.")
+                    .setPositiveButton("Close", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialogInterface, int i) {
+                            dialogInterface.dismiss();
+                        }
+                    })
+                    .show();
+            return false;
+        }
         new Thread(() -> {
-            String host = "ftp.yourserver.com";
-            String username = "your_username";
-            String password = "your_password";
-            int port = 21; // Default FTP port
             String remoteDir = "/uploads/";
             String localPath = "/storage/emulated/0/Download/myfile.jpg";
 
@@ -514,5 +671,14 @@ public class MainActivity extends AppCompatActivity {
                 }
             });
         }).start();
+        return true;
+    }
+
+    private boolean isValidUrl(String url) {
+        return url != null && Patterns.WEB_URL.matcher(url).matches();
+    }
+
+    private boolean isValidPort(int port) {
+        return port >= 1 && port <= 65535;
     }
 }

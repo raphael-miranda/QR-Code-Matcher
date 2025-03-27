@@ -41,5 +41,6 @@ dependencies {
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)
     implementation(libs.material)
+    implementation(libs.dexter)
     implementation("commons-net:commons-net:3.8.0")
 }
