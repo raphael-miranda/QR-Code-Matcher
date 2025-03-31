@@ -32,10 +32,8 @@ import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
 import com.google.android.material.button.MaterialButton;
-import com.google.android.material.color.MaterialColors;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.textfield.TextInputEditText;
-import com.google.android.material.textfield.TextInputLayout;
 import com.karumi.dexter.Dexter;
 import com.karumi.dexter.PermissionToken;
 import com.karumi.dexter.listener.PermissionDeniedResponse;
@@ -63,7 +61,6 @@ public class MainActivity extends AppCompatActivity {
     private TextView txtScannedNumber;
     private TextInputEditText txtCtNr, txtPartNr1, txtDNr, txtQtty1;
 
-    private TextInputLayout txtPartNr2Field, txtQtty2Field;
     private TextInputEditText txtCName, txtPartNr2, txtCustN, txtQtty2, txtOrderNr;
 
     private AppCompatButton btnPlus1, btnPlus2;
@@ -85,9 +82,6 @@ public class MainActivity extends AppCompatActivity {
 
         txtScanLabel = findViewById(R.id.txtScanLabel);
         txtScannedNumber = findViewById(R.id.txtScannedNumber);
-
-        txtPartNr2Field = findViewById(R.id.txtPartNr2Field);
-        txtQtty2Field = findViewById(R.id.txtQtty2Field);
 
         txtCtNr = findViewById(R.id.txtCtNr);
         txtPartNr1 = findViewById(R.id.txtPartNr1);
@@ -155,9 +149,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void checkPermissions() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            if (checkSelfPermission(android.Manifest.permission.READ_MEDIA_IMAGES) == PackageManager.PERMISSION_GRANTED) {
-
-            } else {
+            if (checkSelfPermission(android.Manifest.permission.READ_MEDIA_IMAGES) != PackageManager.PERMISSION_GRANTED) {
                 storagePermissionLauncher.launch(android.Manifest.permission.READ_MEDIA_IMAGES);
             }
 
