@@ -9,6 +9,13 @@ import java.io.File;
 
 public class Utils {
 
+    public static final String CARTON_NR = "CartonNr";
+    public static final String PART_NR = "PartNr";
+    public static final String D_NR = "DNr";
+    public static final String CUST_N = "CustN";
+    public static final String QUANTITY = "Quantity";
+    public static final String ORDER_NR = "OrderNr";
+
     public static File getDocumentsDirectory(Context context) {
         File dir;
 

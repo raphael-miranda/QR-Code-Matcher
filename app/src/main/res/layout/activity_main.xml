@@ -306,18 +306,21 @@
             android:layout_height="wrap_content"
             android:baselineAligned="false"
             android:orientation="horizontal"
-            android:padding="20dp">
+            android:paddingHorizontal="20dp"
+            android:paddingVertical="10dp">
 
             <RelativeLayout
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:orientation="horizontal">
-                <TextView
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/smallLabelListView"
                     android:layout_width="match_parent"
-                    android:layout_height="60dp"
+                    android:layout_height="70dp"
                     android:background="@drawable/ed_bg"
-                    android:layout_toStartOf="@id/btnPlus1"/>
+                    android:layout_toStartOf="@id/btnPlus1" />
 
                 <androidx.appcompat.widget.AppCompatButton
                     android:id="@+id/btnPlus1"
@@ -337,9 +340,11 @@
                 android:layout_weight="1"
                 android:orientation="horizontal"
                 android:layout_marginStart="20dp">
-                <TextView
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/bigLabelListView"
                     android:layout_width="match_parent"
-                    android:layout_height="60dp"
+                    android:layout_height="70dp"
                     android:background="@drawable/ed_bg"
                     android:layout_toStartOf="@id/btnPlus2"/>
 

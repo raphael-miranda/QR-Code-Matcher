@@ -1,5 +1,8 @@
 package com.qrcode.matcher;
 
+import static android.view.View.GONE;
+import static android.view.View.VISIBLE;
+
 import android.Manifest;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -30,10 +33,14 @@ import androidx.appcompat.widget.AppCompatButton;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
+import androidx.recyclerview.widget.DividerItemDecoration;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.textfield.TextInputEditText;
+import com.google.android.material.textfield.TextInputLayout;
 import com.karumi.dexter.Dexter;
 import com.karumi.dexter.PermissionToken;
 import com.karumi.dexter.listener.PermissionDeniedResponse;
@@ -45,7 +52,9 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Locale;
 
 public class MainActivity extends AppCompatActivity {
@@ -57,14 +66,21 @@ public class MainActivity extends AppCompatActivity {
     private static final String IS_MANUAL = "is_manual";
     private static final String SCANNED_NUMBER = "scanned_number";
 
+
     private TextView txtScanLabel;
     private TextView txtScannedNumber;
     private TextInputEditText txtCtNr, txtPartNr1, txtDNr, txtQtty1;
 
     private TextInputEditText txtCName, txtPartNr2, txtCustN, txtQtty2, txtOrderNr;
 
+    private RecyclerView listSmallLabels, listBigLabels;
     private AppCompatButton btnPlus1, btnPlus2;
     private AppCompatButton btnNext;
+
+//    private ArrayList<HashMap<String, String>> arrSmallLabels = new ArrayList<>();
+//    private ArrayList<HashMap<String, String>> arrBigLabels = new ArrayList<>();
+    LabelsAdapter smallListAdapter = new LabelsAdapter(new ArrayList<>());
+    LabelsAdapter bigListAdapter = new LabelsAdapter(new ArrayList<>());
 
     private ActivityResultLauncher<String> storagePermissionLauncher;
     private ActivityResultLauncher<Intent> manageStorageLauncher;
@@ -94,8 +110,23 @@ public class MainActivity extends AppCompatActivity {
         txtQtty2 = findViewById(R.id.txtQtty2);
         txtOrderNr = findViewById(R.id.txtOrderNr);
 
+        listSmallLabels = findViewById(R.id.smallLabelListView);
+        listBigLabels = findViewById(R.id.bigLabelListView);
         btnPlus1 = findViewById(R.id.btnPlus1);
         btnPlus2 = findViewById(R.id.btnPlus2);
+
+        smallListAdapter = new LabelsAdapter(new ArrayList<>());
+        bigListAdapter = new LabelsAdapter(new ArrayList<>());
+
+        listSmallLabels.setLayoutManager(new LinearLayoutManager(this));
+        listSmallLabels.addItemDecoration(
+                new DividerItemDecoration(this, DividerItemDecoration.VERTICAL));
+        listSmallLabels.setAdapter(smallListAdapter);
+
+        listBigLabels.setLayoutManager(new LinearLayoutManager(this));
+        listBigLabels.addItemDecoration(
+                new DividerItemDecoration(this, DividerItemDecoration.VERTICAL));
+        listBigLabels.setAdapter(bigListAdapter);
 
         SharedPreferences sharedPreferences = getSharedPreferences(getPackageName(), MODE_PRIVATE);
         int scannedNumber = sharedPreferences.getInt(SCANNED_NUMBER, 0);
@@ -105,6 +136,14 @@ public class MainActivity extends AppCompatActivity {
         btnNext = findViewById(R.id.btnNext);
         AppCompatButton btnNew = findViewById(R.id.btnNew);
         AppCompatButton btnReset = findViewById(R.id.btnReset);
+
+        btnPlus1.setOnClickListener(view -> {
+            showAddLabelDialog(true);
+        });
+
+        btnPlus2.setOnClickListener(view -> {
+            showAddLabelDialog(false);
+        });
 
         btnViewData.setOnClickListener(view -> {
 
@@ -495,6 +534,120 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    private void showAddLabelDialog(boolean isLeft) {
+        MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(this);
+        LayoutInflater inflater = getLayoutInflater();
+        View dialogView = inflater.inflate(R.layout.dialog_add_label, null);
+        builder.setView(dialogView)
+                .setCancelable(true);
+        AlertDialog dialog = builder.create();
+
+        TextInputLayout cartonNameField = dialogView.findViewById(R.id.txtCartonNameField);
+        TextInputLayout partNrField = dialogView.findViewById(R.id.txtPartNrField);
+        TextInputLayout dNrField = dialogView.findViewById(R.id.txtDNrField);
+        TextInputLayout quantityField = dialogView.findViewById(R.id.txtQuantityField);
+        TextInputLayout orderNrField = dialogView.findViewById(R.id.txtOrderNrField);
+
+        TextInputEditText txtDialogCartonName = dialogView.findViewById(R.id.txtCartonName);
+        TextInputEditText txtDialogPartNr = dialogView.findViewById(R.id.txtPartNr);
+        TextInputEditText txtDialogDNr = dialogView.findViewById(R.id.txtDNr);
+        TextInputEditText txtDialogQuantity = dialogView.findViewById(R.id.txtQuantity);
+        TextInputEditText txtDialogOrderNr = dialogView.findViewById(R.id.txtOrderNr);
+
+        MaterialButton btnAdd = dialogView.findViewById(R.id.btnAdd);
+        MaterialButton btnClear = dialogView.findViewById(R.id.btnClear);
+        MaterialButton btnCancel = dialogView.findViewById(R.id.btnCancel);
+
+        if (isLeft) {
+            orderNrField.setVisibility(GONE);
+            cartonNameField.setHint(getString(R.string.ct_nr));
+            partNrField.setHint(getString(R.string.part_nr));
+            dNrField.setHint(getString(R.string.d_nr));
+            quantityField.setHint(R.string.qtty);
+        } else {
+            orderNrField.setVisibility(VISIBLE);
+            cartonNameField.setHint(getString(R.string.c_name));
+            partNrField.setHint(getString(R.string.part_nr));
+            dNrField.setHint(getString(R.string.cust_n));
+            quantityField.setHint(R.string.qtty);
+            orderNrField.setHint(R.string.order_nr);
+        }
+
+        txtDialogCartonName.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
+            }
+
+            @Override
+            public void afterTextChanged(Editable editable) {
+                if (txtDialogCartonName.getText().toString().isEmpty()) {
+                    btnAdd.setEnabled(false);
+                } else {
+                    btnAdd.setEnabled(true);
+                }
+            }
+        });
+
+        btnAdd.setOnClickListener(view -> {
+
+            String cartonName = txtDialogCartonName.getText().toString();
+            String partNr = txtDialogPartNr.getText().toString();
+            String dNr = txtDialogDNr.getText().toString();
+            String quantity = txtDialogQuantity.getText().toString();
+            String orderNr = isLeft ? "" : txtDialogOrderNr.getText().toString();
+
+            if (isLeft) {
+                HashMap<String, String> smallLabelData = new HashMap<>();
+                smallLabelData.put(Utils.CARTON_NR, txtCtNr.getText().toString());
+                smallLabelData.put(Utils.PART_NR, txtPartNr1.getText().toString());
+                smallLabelData.put(Utils.D_NR, txtDNr.getText().toString());
+                smallLabelData.put(Utils.QUANTITY, txtQtty1.getText().toString());
+                smallListAdapter.addItem(smallLabelData);
+
+                txtCtNr.setText(cartonName);
+                txtPartNr1.setText(partNr);
+                txtDNr.setText(dNr);
+                txtQtty1.setText(quantity);
+            } else {
+                HashMap<String, String> bigLabelData = new HashMap<>();
+                bigLabelData.put(Utils.CARTON_NR, txtCName.getText().toString());
+                bigLabelData.put(Utils.PART_NR, txtPartNr2.getText().toString());
+                bigLabelData.put(Utils.CUST_N, txtCustN.getText().toString());
+                bigLabelData.put(Utils.QUANTITY, txtQtty2.getText().toString());
+                bigLabelData.put(Utils.ORDER_NR, txtOrderNr.getText().toString());
+                bigListAdapter.addItem(bigLabelData);
+
+                txtCName.setText(cartonName);
+                txtPartNr2.setText(partNr);
+                txtCustN.setText(dNr);
+                txtQtty2.setText(quantity);
+                txtOrderNr.setText(orderNr);
+            }
+
+            dialog.dismiss();
+        });
+
+        btnClear.setOnClickListener(view -> {
+            txtDialogCartonName.setText("");
+            txtDialogPartNr.setText("");
+            txtDialogDNr.setText("");
+            txtDialogQuantity.setText("");
+            if (!isLeft) {
+                txtDialogOrderNr.setText("");
+            }
+        });
+
+        btnCancel.setOnClickListener(view -> dialog.dismiss());
+
+        dialog.show();
+    }
+
     private void onNew() {
         new MaterialAlertDialogBuilder(this)
                 .setTitle("New")
@@ -517,30 +670,25 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void next() {
+
+        HashMap<String, String> smallLabelData = new HashMap<>();
+        smallLabelData.put(Utils.CARTON_NR, txtCtNr.getText().toString());
+        smallLabelData.put(Utils.PART_NR, txtPartNr1.getText().toString());
+        smallLabelData.put(Utils.D_NR, txtDNr.getText().toString());
+        smallLabelData.put(Utils.QUANTITY, txtQtty1.getText().toString());
+        smallListAdapter.addItem(smallLabelData);
+
+        HashMap<String, String> bigLabelData = new HashMap<>();
+        bigLabelData.put(Utils.CARTON_NR, txtCName.getText().toString());
+        bigLabelData.put(Utils.PART_NR, txtPartNr2.getText().toString());
+        bigLabelData.put(Utils.CUST_N, txtCustN.getText().toString());
+        bigLabelData.put(Utils.QUANTITY, txtQtty2.getText().toString());
+        bigLabelData.put(Utils.ORDER_NR, txtOrderNr.getText().toString());
+        bigListAdapter.addItem(bigLabelData);
+
         SharedPreferences sharedPreferences = getSharedPreferences(getPackageName(), MODE_PRIVATE);
         int scannedNumber = sharedPreferences.getInt(SCANNED_NUMBER, 0);
-
-        String ctNr = txtCtNr.getText().toString();
-        String partNr1 = txtPartNr1.getText().toString();
-        String dNr = txtDNr.getText().toString();
-        String qtty1 = txtQtty1.getText().toString();
-        String smallLabel = String.format(Locale.getDefault(),
-                "%-11s ; SCAN%03d ; %-12s ; %-14s ; %-14s ; %-12s;\n",
-                "SmallLabel", scannedNumber + 1, ctNr, partNr1, dNr, qtty1);
-
-        String cName = txtCName.getText().toString();
-        String partNr2 = txtPartNr2.getText().toString();
-        String custN = txtCustN.getText().toString();
-        String qtty2 = txtQtty2.getText().toString();
-        String orderNr = txtOrderNr.getText().toString();
-
-        String bigLabel = String.format(Locale.getDefault(),
-                "%-11s ; SCAN%03d ; %-12s ; %-14s ; %-14s ; %-12s; %-20s;\n",
-                "BigLabel", scannedNumber + 1, cName, partNr2, custN, qtty2, orderNr);
-
-        String strData = smallLabel + bigLabel;
-
-        saveData(strData);
+        saveData(generateStringToSave(scannedNumber));
 
         // increase Scanned Number
         SharedPreferences.Editor editor = sharedPreferences.edit();
@@ -551,9 +699,63 @@ public class MainActivity extends AppCompatActivity {
         reset();
     }
 
+    private String generateStringToSave(int scannedNumber) {
+        StringBuilder result = new StringBuilder();
+
+        HashMap<String, String> smallLabel = smallListAdapter.getItem(0);
+        String ctNr = smallLabel.getOrDefault(Utils.CARTON_NR, "");
+        String partNr1 = smallLabel.getOrDefault(Utils.PART_NR, "");
+        String dNr = smallLabel.getOrDefault(Utils.D_NR, "");
+        String qtty1 = smallLabel.getOrDefault(Utils.QUANTITY, "");
+        String strSmallLabel = String.format(Locale.getDefault(),
+                "%-11s ; SCAN%03d ; %-12s ; %-14s ; %-14s ; %-12s;\n",
+                "SmallLabel", scannedNumber + 1, ctNr, partNr1, dNr, qtty1);
+        result.append(strSmallLabel);
+
+        HashMap<String, String> bigLabel = bigListAdapter.getItem(0);
+        String cName = bigLabel.getOrDefault(Utils.CARTON_NR, "");
+        String partNr2 = bigLabel.getOrDefault(Utils.PART_NR, "");
+        String custN = bigLabel.getOrDefault(Utils.CUST_N, "");
+        String qtty2 = bigLabel.getOrDefault(Utils.QUANTITY, "");
+        String orderNr = bigLabel.getOrDefault(Utils.ORDER_NR, "");
+        String strBigLabel = String.format(Locale.getDefault(),
+                "%-11s ; SCAN%03d ; %-12s ; %-14s ; %-14s ; %-12s; %-20s;\n",
+                "BigLabel", scannedNumber + 1, cName, partNr2, custN, qtty2, orderNr);
+        result.append(strBigLabel);
+
+        for (int i = 1; i < smallListAdapter.getTotalItemsCount(); i++) {
+            smallLabel = smallListAdapter.getItem(i);
+
+            ctNr = smallLabel.getOrDefault(Utils.CARTON_NR, "");
+            partNr1 = smallLabel.getOrDefault(Utils.PART_NR, "");
+            dNr = smallLabel.getOrDefault(Utils.D_NR, "");
+            qtty1 = smallLabel.getOrDefault(Utils.QUANTITY, "");
+
+            strSmallLabel = String.format(Locale.getDefault(),
+                    "%-11s ; SCAN%03d ; %-12s ; %-14s ; %-14s ; %-12s;\n",
+                    "SmallLabel+", scannedNumber + 1, ctNr, partNr1, dNr, qtty1);
+
+            result.append(strSmallLabel);
+        }
+
+        for (int i = 1; i < bigListAdapter.getTotalItemsCount(); i++) {
+            bigLabel = bigListAdapter.getItem(i);
+            cName = bigLabel.getOrDefault(Utils.CARTON_NR, "");
+            partNr2 = bigLabel.getOrDefault(Utils.PART_NR, "");
+            custN = bigLabel.getOrDefault(Utils.CUST_N, "");
+            qtty2 = bigLabel.getOrDefault(Utils.QUANTITY, "");
+            orderNr = bigLabel.getOrDefault(Utils.ORDER_NR, "");
+
+            strBigLabel = String.format(Locale.getDefault(),
+                    "%-11s ; SCAN%03d ; %-12s ; %-14s ; %-14s ; %-12s; %-20s;\n",
+                    "BigLabel+", scannedNumber + 1, cName, partNr2, custN, qtty2, orderNr);
+
+            result.append(strBigLabel);
+        }
+        return result.toString();
+    }
+
     private void saveData(String strData) {
-        SharedPreferences sharedPreferences = getSharedPreferences(getPackageName(), MODE_PRIVATE);
-        int scannedNumber = sharedPreferences.getInt(SCANNED_NUMBER, 0);
 
         SimpleDateFormat format = new SimpleDateFormat("ddMMyyyy", Locale.getDefault());
         String strDate = format.format(new Date());
@@ -589,6 +791,9 @@ public class MainActivity extends AppCompatActivity {
         txtCustN.setText("");
         txtQtty2.setText("");
         txtOrderNr.setText("");
+
+        smallListAdapter.clear();
+        bigListAdapter.clear();
 
         txtPartNr1.setBackgroundTintList(txtCtNr.getBackgroundTintList());
         txtPartNr2.setBackgroundTintList(txtCtNr.getBackgroundTintList());
