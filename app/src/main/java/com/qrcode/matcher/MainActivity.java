@@ -61,7 +61,6 @@ public class MainActivity extends AppCompatActivity {
 
     private TextView txtScanLabel;
     private TextView txtScannedNumber;
-    private TextInputLayout txtPartNr1Field, txtQtty1Field;
     private TextInputEditText txtCtNr, txtPartNr1, txtDNr, txtQtty1;
 
     private TextInputLayout txtPartNr2Field, txtQtty2Field;
@@ -86,9 +85,6 @@ public class MainActivity extends AppCompatActivity {
 
         txtScanLabel = findViewById(R.id.txtScanLabel);
         txtScannedNumber = findViewById(R.id.txtScannedNumber);
-
-        txtPartNr1Field = findViewById(R.id.txtPartNr1Field);
-        txtQtty1Field = findViewById(R.id.txtQtty1Field);
 
         txtPartNr2Field = findViewById(R.id.txtPartNr2Field);
         txtQtty2Field = findViewById(R.id.txtQtty2Field);
@@ -314,6 +310,44 @@ public class MainActivity extends AppCompatActivity {
 
             }
         });
+
+        txtPartNr1.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
+            }
+
+            @Override
+            public void afterTextChanged(Editable editable) {
+                if (!(txtPartNr2.getText().toString().isEmpty())) {
+                    compare();
+                }
+            }
+        });
+
+        txtQtty1.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
+            }
+
+            @Override
+            public void afterTextChanged(Editable editable) {
+                if (!(txtQtty2.getText().toString().isEmpty())) {
+                    compare();
+                }
+            }
+        });
     }
 
     private void initRightScan() {
@@ -434,20 +468,20 @@ public class MainActivity extends AppCompatActivity {
         int result = 0;
         if (strPartNr1.equals(strPartNr2)) {
             result += 1;
-            txtPartNr1Field.setBoxStrokeColorStateList(greenColors);
-            txtPartNr2Field.setBoxStrokeColorStateList(greenColors);
+            txtPartNr1.setBackgroundTintList(greenColors);
+            txtPartNr2.setBackgroundTintList(greenColors);
         } else {
-            txtPartNr1Field.setBoxStrokeColorStateList(redColors);
-            txtPartNr2Field.setBoxStrokeColorStateList(redColors);
+            txtPartNr1.setBackgroundTintList(redColors);
+            txtPartNr2.setBackgroundTintList(redColors);
         }
 
         if (strQtty1.equals(strQtty2)) {
             result += 1;
-            txtQtty1Field.setBoxStrokeColorStateList(greenColors);
-            txtQtty2Field.setBoxStrokeColorStateList(greenColors);
+            txtQtty1.setBackgroundTintList(greenColors);
+            txtQtty2.setBackgroundTintList(greenColors);
         } else {
-            txtQtty1Field.setBoxStrokeColorStateList(redColors);
-            txtQtty2Field.setBoxStrokeColorStateList(redColors);
+            txtQtty1.setBackgroundTintList(redColors);
+            txtQtty2.setBackgroundTintList(redColors);
         }
 
         if (result == 2) {
@@ -564,27 +598,10 @@ public class MainActivity extends AppCompatActivity {
         txtQtty2.setText("");
         txtOrderNr.setText("");
 
-        // Or create manually based on theme attributes
-        int colorPrimary = MaterialColors.getColor(this, android.R.attr.colorPrimary, "DefaultPrimary");
-        int colorOnSurface = MaterialColors.getColor(this, android.R.attr.colorControlNormal, "DefaultOnSurface");
-
-        ColorStateList defaultStrokeColors = new ColorStateList(
-                new int[][]{
-                        new int[]{android.R.attr.state_focused}, // Focused
-                        new int[]{-android.R.attr.state_enabled}, // Disabled
-                        new int[]{} // Default
-                },
-                new int[]{
-                        colorPrimary,
-                        colorOnSurface,
-                        colorOnSurface
-                }
-        );
-
-        txtPartNr1Field.setBoxStrokeColorStateList(defaultStrokeColors);
-        txtPartNr2Field.setBoxStrokeColorStateList(defaultStrokeColors);
-        txtQtty1Field.setBoxStrokeColorStateList(defaultStrokeColors);
-        txtQtty2Field.setBoxStrokeColorStateList(defaultStrokeColors);
+        txtPartNr1.setBackgroundTintList(txtCtNr.getBackgroundTintList());
+        txtPartNr2.setBackgroundTintList(txtCtNr.getBackgroundTintList());
+        txtQtty1.setBackgroundTintList(txtCtNr.getBackgroundTintList());
+        txtQtty2.setBackgroundTintList(txtCtNr.getBackgroundTintList());
 
         btnNext.setEnabled(false);
         btnPlus1.setEnabled(false);

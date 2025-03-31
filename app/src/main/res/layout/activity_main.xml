@@ -99,10 +99,10 @@
                     android:id="@+id/txtCtNrField"
                     android:layout_width="match_parent"
                     android:layout_height="60dp"
-                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                    style="@style/Widget.MaterialComponents.TextInputLayout.FilledBox.Dense"
                     android:hint="@string/ct_nr"
-                    app:hintTextColor="#cc0000"
-                    android:layout_marginHorizontal="6dp">
+                    android:layout_marginHorizontal="6dp"
+                    android:layout_marginVertical="4dp">
 
                     <!--this is the actual edit text which takes the input-->
                     <com.google.android.material.textfield.TextInputEditText
@@ -112,7 +112,7 @@
                         android:imeOptions="actionNext"
                         android:nextFocusForward="@+id/txtPartNr1"
                         android:textAlignment="center"
-                        android:textSize="18sp"/>
+                        android:textSize="18sp" />
 
                 </com.google.android.material.textfield.TextInputLayout>
 
@@ -120,9 +120,10 @@
                     android:id="@+id/txtPartNr1Field"
                     android:layout_width="match_parent"
                     android:layout_height="60dp"
-                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                    style="@style/Widget.MaterialComponents.TextInputLayout.FilledBox.Dense"
                     android:hint="@string/part_nr"
-                    android:layout_marginHorizontal="6dp">
+                    android:layout_marginHorizontal="6dp"
+                    android:layout_marginVertical="4dp">
 
                     <!--this is the actual edit text which takes the input-->
                     <com.google.android.material.textfield.TextInputEditText
@@ -140,9 +141,10 @@
                     android:id="@+id/txtDNrField"
                     android:layout_width="match_parent"
                     android:layout_height="60dp"
-                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                    style="@style/Widget.MaterialComponents.TextInputLayout.FilledBox.Dense"
                     android:hint="@string/d_nr"
-                    android:layout_marginHorizontal="6dp">
+                    android:layout_marginHorizontal="6dp"
+                    android:layout_marginVertical="4dp">
 
                     <!--this is the actual edit text which takes the input-->
                     <com.google.android.material.textfield.TextInputEditText
@@ -160,9 +162,10 @@
                     android:id="@+id/txtQtty1Field"
                     android:layout_width="match_parent"
                     android:layout_height="60dp"
-                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                    style="@style/Widget.MaterialComponents.TextInputLayout.FilledBox.Dense"
                     android:hint="@string/qtty"
-                    android:layout_marginHorizontal="6dp">
+                    android:layout_marginHorizontal="6dp"
+                    android:layout_marginVertical="4dp">
 
                     <com.google.android.material.textfield.TextInputEditText
                         android:id="@+id/txtQtty1"
@@ -198,9 +201,10 @@
                     android:id="@+id/txtCNameField"
                     android:layout_width="match_parent"
                     android:layout_height="60dp"
-                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                    style="@style/Widget.MaterialComponents.TextInputLayout.FilledBox.Dense"
                     android:hint="@string/c_name"
-                    android:layout_marginHorizontal="6dp">
+                    android:layout_marginHorizontal="6dp"
+                    android:layout_marginVertical="4dp">
 
                     <com.google.android.material.textfield.TextInputEditText
                         android:id="@+id/txtCName"
@@ -217,9 +221,10 @@
                     android:id="@+id/txtPartNr2Field"
                     android:layout_width="match_parent"
                     android:layout_height="60dp"
-                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                    style="@style/Widget.MaterialComponents.TextInputLayout.FilledBox.Dense"
                     android:hint="@string/part_nr"
-                    android:layout_marginHorizontal="6dp">
+                    android:layout_marginHorizontal="6dp"
+                    android:layout_marginVertical="4dp">
 
                     <com.google.android.material.textfield.TextInputEditText
                         android:id="@+id/txtPartNr2"
@@ -236,9 +241,10 @@
                     android:id="@+id/txtCustNField"
                     android:layout_width="match_parent"
                     android:layout_height="60dp"
-                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                    style="@style/Widget.MaterialComponents.TextInputLayout.FilledBox.Dense"
                     android:hint="@string/cust_n"
-                    android:layout_marginHorizontal="6dp">
+                    android:layout_marginHorizontal="6dp"
+                    android:layout_marginVertical="4dp">
 
                     <com.google.android.material.textfield.TextInputEditText
                         android:id="@+id/txtCustN"
@@ -255,9 +261,10 @@
                     android:id="@+id/txtQtty2Field"
                     android:layout_width="match_parent"
                     android:layout_height="60dp"
-                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                    style="@style/Widget.MaterialComponents.TextInputLayout.FilledBox.Dense"
                     android:hint="@string/qtty"
-                    android:layout_marginHorizontal="6dp">
+                    android:layout_marginHorizontal="6dp"
+                    android:layout_marginVertical="4dp">
 
                     <com.google.android.material.textfield.TextInputEditText
                         android:id="@+id/txtQtty2"
@@ -275,9 +282,10 @@
                     android:id="@+id/txtOrderNrField"
                     android:layout_width="match_parent"
                     android:layout_height="60dp"
-                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                    style="@style/Widget.MaterialComponents.TextInputLayout.FilledBox.Dense"
                     android:hint="@string/order_nr"
-                    android:layout_marginHorizontal="6dp">
+                    android:layout_marginHorizontal="6dp"
+                    android:layout_marginVertical="4dp">
 
                     <com.google.android.material.textfield.TextInputEditText
                         android:id="@+id/txtOrderNr"
