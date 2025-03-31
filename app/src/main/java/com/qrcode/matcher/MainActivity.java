@@ -1,7 +1,6 @@
 package com.qrcode.matcher;
 
 import android.Manifest;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
@@ -117,40 +116,17 @@ public class MainActivity extends AppCompatActivity {
         AppCompatButton btnNew = findViewById(R.id.btnNew);
         AppCompatButton btnReset = findViewById(R.id.btnReset);
 
-        btnViewData.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
+        btnViewData.setOnClickListener(view -> {
 
-            }
         });
 
-        btnNext.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                next();
-            }
-        });
+        btnNext.setOnClickListener(view -> next());
 
-        btnNew.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                onNew();
-            }
-        });
+        btnNew.setOnClickListener(view -> onNew());
 
-        btnReset.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                reset();
-            }
-        });
+        btnReset.setOnClickListener(view -> reset());
 
-        findViewById(R.id.btnSettings).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                showSettingsDialog();
-            }
-        });
+        findViewById(R.id.btnSettings).setOnClickListener(view -> showSettingsDialog());
 
         checkManual();
         initLeftScan();
@@ -240,41 +216,33 @@ public class MainActivity extends AppCompatActivity {
         txtPassword.setText(sharedPreferences.getString(FTP_PASSWORD, ""));
         checkboxManual.setChecked(sharedPreferences.getBoolean(IS_MANUAL, false));
 
-        btnSave.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
+        btnSave.setOnClickListener(view -> {
 
-                String hostAddress = txtHost.getText().toString();
-                String portNumber = txtPortNumber.getText().toString();
-                int port = 0;
-                if (!portNumber.isEmpty()) {
-                    port = Integer.parseInt(portNumber);
-                }
-                String username = txtUserName.getText().toString();
-                String password = txtPassword.getText().toString();
-                boolean isManual = checkboxManual.isChecked();
-
-                SharedPreferences sharedPreferences = getSharedPreferences(getPackageName(), MODE_PRIVATE);
-                SharedPreferences.Editor editor = sharedPreferences.edit();
-                editor.putString(FTP_HOST, hostAddress);
-                editor.putInt(FTP_PORT, port);
-                editor.putString(FTP_USERNAME, username);
-                editor.putString(FTP_PASSWORD, password);
-                editor.putBoolean(IS_MANUAL, isManual);
-                editor.apply();
-
-                checkManual();
-
-                dialog.dismiss();
+            String hostAddress = txtHost.getText().toString();
+            String portNumber = txtPortNumber.getText().toString();
+            int port = 0;
+            if (!portNumber.isEmpty()) {
+                port = Integer.parseInt(portNumber);
             }
+            String username = txtUserName.getText().toString();
+            String password = txtPassword.getText().toString();
+            boolean isManual = checkboxManual.isChecked();
+
+            SharedPreferences sharedPreferences1 = getSharedPreferences(getPackageName(), MODE_PRIVATE);
+            SharedPreferences.Editor editor = sharedPreferences1.edit();
+            editor.putString(FTP_HOST, hostAddress);
+            editor.putInt(FTP_PORT, port);
+            editor.putString(FTP_USERNAME, username);
+            editor.putString(FTP_PASSWORD, password);
+            editor.putBoolean(IS_MANUAL, isManual);
+            editor.apply();
+
+            checkManual();
+
+            dialog.dismiss();
         });
 
-        btnCancel.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                dialog.dismiss();
-            }
-        });
+        btnCancel.setOnClickListener(view -> dialog.dismiss());
 
         dialog.show();
     }
@@ -311,25 +279,17 @@ public class MainActivity extends AppCompatActivity {
         txtCtNr.setFocusable(true);
         txtCtNr.requestFocus();
 
-        txtCtNr.post(new Runnable() {
-            @Override
-            public void run() {
-                txtCtNr.setSelection(txtCtNr.getText().length());
-            }
-        });
+        txtCtNr.post(() -> txtCtNr.setSelection(txtCtNr.getText().length()));
 
-        txtCtNr.setOnKeyListener(new View.OnKeyListener() {
-            @Override
-            public boolean onKey(View view, int keyCode, KeyEvent event) {
+        txtCtNr.setOnKeyListener((view, keyCode, event) -> {
 
-                if (keyCode==KeyEvent.KEYCODE_ENTER)
-                {
-                    // Just ignore the [Enter] key
-                    return true;
-                }
-                // Handle all other keys in the default way
-                return (keyCode == KeyEvent.KEYCODE_ENTER);
+            if (keyCode==KeyEvent.KEYCODE_ENTER)
+            {
+                // Just ignore the [Enter] key
+                return true;
             }
+            // Handle all other keys in the default way
+            return (keyCode == KeyEvent.KEYCODE_ENTER);
         });
         txtCtNr.addTextChangedListener(new TextWatcher() {
             @Override
@@ -359,12 +319,7 @@ public class MainActivity extends AppCompatActivity {
     private void initRightScan() {
         txtCName.setFocusable(true);
 
-        txtCName.post(new Runnable() {
-            @Override
-            public void run() {
-                txtCName.setSelection(txtCName.getText().length());
-            }
-        });
+        txtCName.post(() -> txtCName.setSelection(txtCName.getText().length()));
 
         txtCName.setOnKeyListener(new View.OnKeyListener() {
             @Override
@@ -518,28 +473,20 @@ public class MainActivity extends AppCompatActivity {
         new MaterialAlertDialogBuilder(this)
                 .setTitle("New")
                 .setMessage("Are you sure to create new one?")
-                .setNegativeButton("Yes", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialogInterface, int i) {
-                        if (upload()) {
-                            // set scanned number to 0
-                            SharedPreferences.Editor editor = getSharedPreferences(getPackageName(), MODE_PRIVATE).edit();
-                            editor.putInt(SCANNED_NUMBER, 0);
-                            editor.apply();
-                            txtScannedNumber.setText(String.valueOf(0));
+                .setNegativeButton("Yes", (dialogInterface, i) -> {
+                    if (upload()) {
+                        // set scanned number to 0
+                        SharedPreferences.Editor editor = getSharedPreferences(getPackageName(), MODE_PRIVATE).edit();
+                        editor.putInt(SCANNED_NUMBER, 0);
+                        editor.apply();
+                        txtScannedNumber.setText(String.valueOf(0));
 
-                            reset();
-                        }
+                        reset();
+                    }
 
-                        dialogInterface.dismiss();
-                    }
+                    dialogInterface.dismiss();
                 })
-                .setPositiveButton("No", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialogInterface, int i) {
-                        dialogInterface.dismiss();
-                    }
-                })
+                .setPositiveButton("No", (dialogInterface, i) -> dialogInterface.dismiss())
                 .show();
     }
 
@@ -656,12 +603,7 @@ public class MainActivity extends AppCompatActivity {
             new MaterialAlertDialogBuilder(this)
                     .setTitle("Error")
                     .setMessage("Please set valid FTP server url and port number in Settings.")
-                    .setPositiveButton("Close", new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialogInterface, int i) {
-                            dialogInterface.dismiss();
-                        }
-                    })
+                    .setPositiveButton("Close", (dialogInterface, i) -> dialogInterface.dismiss())
                     .show();
             return false;
         }
