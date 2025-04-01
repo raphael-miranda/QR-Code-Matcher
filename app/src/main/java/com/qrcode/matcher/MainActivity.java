@@ -146,7 +146,8 @@ public class MainActivity extends AppCompatActivity {
         });
 
         btnViewData.setOnClickListener(view -> {
-
+            Intent intent = new Intent(this, ViewDataActivity.class);
+            startActivity(intent);
         });
 
         btnNext.setOnClickListener(view -> next());
