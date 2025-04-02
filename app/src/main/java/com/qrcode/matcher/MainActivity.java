@@ -77,13 +77,13 @@ public class MainActivity extends AppCompatActivity {
     private AppCompatButton btnPlus1, btnPlus2;
     private AppCompatButton btnNext;
 
-//    private ArrayList<HashMap<String, String>> arrSmallLabels = new ArrayList<>();
-//    private ArrayList<HashMap<String, String>> arrBigLabels = new ArrayList<>();
     LabelsAdapter smallListAdapter = new LabelsAdapter(new ArrayList<>());
     LabelsAdapter bigListAdapter = new LabelsAdapter(new ArrayList<>());
 
     private ActivityResultLauncher<String> storagePermissionLauncher;
     private ActivityResultLauncher<Intent> manageStorageLauncher;
+
+    private boolean isContinue = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -654,7 +654,8 @@ public class MainActivity extends AppCompatActivity {
                 .setTitle("New")
                 .setMessage("Are you sure to create new one?")
                 .setNegativeButton("Yes", (dialogInterface, i) -> {
-                    if (upload()) {
+                    upload();
+                    if (isContinue) {
                         // set scanned number to 0
                         SharedPreferences.Editor editor = getSharedPreferences(getPackageName(), MODE_PRIVATE).edit();
                         editor.putInt(SCANNED_NUMBER, 0);
@@ -806,7 +807,7 @@ public class MainActivity extends AppCompatActivity {
         btnPlus2.setEnabled(false);
     }
 
-    private boolean upload() {
+    private void upload() {
 
         SharedPreferences sharedPreferences = getSharedPreferences(getPackageName(), MODE_PRIVATE);
         String host = sharedPreferences.getString(FTP_HOST, "");
@@ -817,37 +818,41 @@ public class MainActivity extends AppCompatActivity {
         if (host.isEmpty() || !isValidUrl(host) || !isValidPort(port)) {
             new MaterialAlertDialogBuilder(this)
                     .setTitle("Error")
-                    .setMessage("Please set valid FTP server url and port number in Settings.")
-                    .setPositiveButton("Close", (dialogInterface, i) -> dialogInterface.dismiss())
+                    .setMessage("Please set valid FTP server url and port number in Settings. Do you want to create new one without uploading?")
+                    .setNegativeButton("Yes", (dialogInterface, i) -> {
+                        isContinue = true;
+                        dialogInterface.dismiss();
+                    })
+                    .setPositiveButton("No", (dialogInterface, i) -> {
+                        isContinue = false;
+                        dialogInterface.dismiss();
+                    })
                     .show();
-            return false;
+        } else {
+            SimpleDateFormat format = new SimpleDateFormat("ddMMyyyy", Locale.getDefault());
+            String strDate = format.format(new Date());
+            String fileName = String.format(Locale.getDefault(), "SCAN%s.txt", strDate);
+
+            File dir = Utils.getDocumentsDirectory(this);
+            File file = new File(dir, fileName);
+            String localPath = file.getAbsolutePath();
+
+            new Thread(() -> {
+                String remoteDir = "/uploads/";
+
+                boolean uploaded = FTPUploader.uploadFile(
+                        host, username, password, port, remoteDir, localPath);
+
+                runOnUiThread(() -> {
+                    if (uploaded) {
+                        Toast.makeText(this, "File uploaded successfully", Toast.LENGTH_SHORT).show();
+                    } else {
+                        Toast.makeText(this, "Upload failed", Toast.LENGTH_SHORT).show();
+                    }
+                });
+            }).start();
+            isContinue = true;
         }
-
-
-        SimpleDateFormat format = new SimpleDateFormat("ddMMyyyy", Locale.getDefault());
-        String strDate = format.format(new Date());
-        String fileName = String.format(Locale.getDefault(), "SCAN%s.txt", strDate);
-
-        File dir = Utils.getDocumentsDirectory(this);
-        File file = new File(dir, fileName);
-        String localPath = file.getAbsolutePath();
-
-        new Thread(() -> {
-            String remoteDir = "/uploads/";
-//            String localPath = "/storage/emulated/0/Download/myfile.jpg";
-
-            boolean uploaded = FTPUploader.uploadFile(
-                    host, username, password, port, remoteDir, localPath);
-
-            runOnUiThread(() -> {
-                if (uploaded) {
-                    Toast.makeText(this, "File uploaded successfully", Toast.LENGTH_SHORT).show();
-                } else {
-                    Toast.makeText(this, "Upload failed", Toast.LENGTH_SHORT).show();
-                }
-            });
-        }).start();
-        return true;
     }
 
     private boolean isValidUrl(String url) {
