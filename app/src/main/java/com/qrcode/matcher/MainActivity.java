@@ -16,6 +16,7 @@ import android.os.Environment;
 import android.provider.Settings;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.util.Patterns;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
@@ -48,9 +49,9 @@ import com.karumi.dexter.listener.PermissionGrantedResponse;
 import com.karumi.dexter.listener.PermissionRequest;
 import com.karumi.dexter.listener.single.PermissionListener;
 
-import org.apache.commons.net.io.Util;
-
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
@@ -344,7 +345,7 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public void afterTextChanged(Editable editable) {
-
+                if (isCartonExisting()) btnNext.setEnabled(false);
             }
         });
 
@@ -426,7 +427,9 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public void afterTextChanged(Editable editable) {
-
+                if (isCartonExisting()) {
+                    btnNext.setEnabled(false);
+                }
             }
         });
 
@@ -467,6 +470,65 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         });
+    }
+
+    private boolean isCartonExisting() {
+        String strCtNr = String.format(Locale.getDefault(), "; %-12s ;", txtCtNr.getText().toString());
+        String strCName = String.format(Locale.getDefault(), "; %-12s ;", txtCName.getText().toString());
+
+        SimpleDateFormat format = new SimpleDateFormat("ddMMyyyy", Locale.getDefault());
+        String strDate = format.format(new Date());
+        String fileName = String.format(Locale.getDefault(), "SCAN%s.txt", strDate);
+
+        if (Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)) {
+            File dir = Utils.getDocumentsDirectory(this);
+            File file = new File(dir, fileName);
+            if (!file.exists()) {
+                return false;
+            }
+
+            try (BufferedReader br = new BufferedReader(new FileReader(file))) {
+                String line;
+                while ((line = br.readLine()) != null) {
+                    if (line.contains(strCtNr) && !strCtNr.isEmpty()) {
+                        new MaterialAlertDialogBuilder(this)
+                                .setTitle("Error")
+                                .setMessage("Your Ct.Nr is existing. Do you want to clear current Ct.Nr?")
+                                .setNegativeButton("Yes", (dialogInterface, i) -> {
+                                    txtCtNr.setText("");
+                                    dialogInterface.dismiss();
+                                })
+                                .setPositiveButton("No", (dialogInterface, i) -> {
+                                    dialogInterface.dismiss();
+                                })
+                                .show();
+                        btnPlus1.setEnabled(false);
+                        return true;
+                    }
+
+                    if (line.contains(strCName) && strCName.isEmpty()) {
+                        new MaterialAlertDialogBuilder(this)
+                                .setTitle("Error")
+                                .setMessage("Your C.Name is existing. Do you want to clear current C.Name?")
+                                .setNegativeButton("Yes", (dialogInterface, i) -> {
+                                    txtCName.setText("");
+                                    dialogInterface.dismiss();
+                                })
+                                .setPositiveButton("No", (dialogInterface, i) -> {
+                                    dialogInterface.dismiss();
+                                })
+                                .show();
+                        btnPlus2.setEnabled(false);
+                        return true;
+                    }
+                }
+                return false;
+            } catch (IOException e) {
+                Log.e("ReadFile", "Error reading file", e);
+                return false;
+            }
+        }
+        return false;
     }
 
     private void compare() {
@@ -578,7 +640,12 @@ public class MainActivity extends AppCompatActivity {
         }
 
         if (result == 2) {
-            btnNext.setEnabled(true);
+            if (!isCartonExisting()) {
+                btnNext.setEnabled(true);
+            } else {
+                btnNext.setEnabled(false);
+            }
+
             txtScanLabel.setText(getString(R.string.match));
             txtScanLabel.setBackgroundColor(Color.GREEN);
             txtScanLabel.setTextColor(Color.WHITE);
@@ -591,8 +658,12 @@ public class MainActivity extends AppCompatActivity {
             txtScanLabel.setBackgroundColor(Color.RED);
             txtScanLabel.setTextColor(Color.WHITE);
 
-            btnPlus1.setEnabled(true);
-            btnPlus2.setEnabled(true);
+            if (!txtCtNr.getText().toString().isEmpty()) {
+                btnPlus1.setEnabled(true);
+            }
+            if (!txtCName.getText().toString().isEmpty()) {
+                btnPlus2.setEnabled(true);
+            }
         }
     }
 
