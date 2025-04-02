@@ -98,7 +98,7 @@
                 <com.google.android.material.textfield.TextInputLayout
                     android:id="@+id/txtCtNrField"
                     android:layout_width="match_parent"
-                    android:layout_height="60dp"
+                    android:layout_height="wrap_content"
                     style="@style/Widget.MaterialComponents.TextInputLayout.FilledBox.Dense"
                     android:hint="@string/ct_nr"
                     android:layout_marginHorizontal="6dp"
@@ -119,7 +119,7 @@
                 <com.google.android.material.textfield.TextInputLayout
                     android:id="@+id/txtPartNr1Field"
                     android:layout_width="match_parent"
-                    android:layout_height="60dp"
+                    android:layout_height="wrap_content"
                     style="@style/Widget.MaterialComponents.TextInputLayout.FilledBox.Dense"
                     android:hint="@string/part_nr"
                     android:layout_marginHorizontal="6dp"
@@ -140,7 +140,7 @@
                 <com.google.android.material.textfield.TextInputLayout
                     android:id="@+id/txtDNrField"
                     android:layout_width="match_parent"
-                    android:layout_height="60dp"
+                    android:layout_height="wrap_content"
                     style="@style/Widget.MaterialComponents.TextInputLayout.FilledBox.Dense"
                     android:hint="@string/d_nr"
                     android:layout_marginHorizontal="6dp"
@@ -161,11 +161,12 @@
                 <com.google.android.material.textfield.TextInputLayout
                     android:id="@+id/txtQtty1Field"
                     android:layout_width="match_parent"
-                    android:layout_height="60dp"
+                    android:layout_height="wrap_content"
                     style="@style/Widget.MaterialComponents.TextInputLayout.FilledBox.Dense"
                     android:hint="@string/qtty"
                     android:layout_marginHorizontal="6dp"
-                    android:layout_marginVertical="4dp">
+                    android:layout_marginVertical="4dp"
+                    app:helperTextEnabled="true">
 
                     <com.google.android.material.textfield.TextInputEditText
                         android:id="@+id/txtQtty1"
@@ -175,7 +176,7 @@
                         android:imeOptions="actionNext"
                         android:nextFocusForward="@+id/txtCName"
                         android:textAlignment="center"
-                        android:textSize="18sp"/>
+                        android:textSize="18sp" />
 
                 </com.google.android.material.textfield.TextInputLayout>
 
@@ -200,7 +201,7 @@
                 <com.google.android.material.textfield.TextInputLayout
                     android:id="@+id/txtCNameField"
                     android:layout_width="match_parent"
-                    android:layout_height="60dp"
+                    android:layout_height="wrap_content"
                     style="@style/Widget.MaterialComponents.TextInputLayout.FilledBox.Dense"
                     android:hint="@string/c_name"
                     android:layout_marginHorizontal="6dp"
@@ -220,7 +221,7 @@
                 <com.google.android.material.textfield.TextInputLayout
                     android:id="@+id/txtPartNr2Field"
                     android:layout_width="match_parent"
-                    android:layout_height="60dp"
+                    android:layout_height="wrap_content"
                     style="@style/Widget.MaterialComponents.TextInputLayout.FilledBox.Dense"
                     android:hint="@string/part_nr"
                     android:layout_marginHorizontal="6dp"
@@ -240,7 +241,7 @@
                 <com.google.android.material.textfield.TextInputLayout
                     android:id="@+id/txtCustNField"
                     android:layout_width="match_parent"
-                    android:layout_height="60dp"
+                    android:layout_height="wrap_content"
                     style="@style/Widget.MaterialComponents.TextInputLayout.FilledBox.Dense"
                     android:hint="@string/cust_n"
                     android:layout_marginHorizontal="6dp"
@@ -260,11 +261,12 @@
                 <com.google.android.material.textfield.TextInputLayout
                     android:id="@+id/txtQtty2Field"
                     android:layout_width="match_parent"
-                    android:layout_height="60dp"
+                    android:layout_height="wrap_content"
                     style="@style/Widget.MaterialComponents.TextInputLayout.FilledBox.Dense"
                     android:hint="@string/qtty"
                     android:layout_marginHorizontal="6dp"
-                    android:layout_marginVertical="4dp">
+                    android:layout_marginVertical="4dp"
+                    app:helperTextEnabled="true">
 
                     <com.google.android.material.textfield.TextInputEditText
                         android:id="@+id/txtQtty2"
@@ -281,7 +283,7 @@
                 <com.google.android.material.textfield.TextInputLayout
                     android:id="@+id/txtOrderNrField"
                     android:layout_width="match_parent"
-                    android:layout_height="60dp"
+                    android:layout_height="wrap_content"
                     style="@style/Widget.MaterialComponents.TextInputLayout.FilledBox.Dense"
                     android:hint="@string/order_nr"
                     android:layout_marginHorizontal="6dp"

@@ -48,6 +48,8 @@ import com.karumi.dexter.listener.PermissionGrantedResponse;
 import com.karumi.dexter.listener.PermissionRequest;
 import com.karumi.dexter.listener.single.PermissionListener;
 
+import org.apache.commons.net.io.Util;
+
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -55,6 +57,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Locale;
 
 public class MainActivity extends AppCompatActivity {
@@ -70,8 +73,8 @@ public class MainActivity extends AppCompatActivity {
     private TextView txtScanLabel;
     private TextView txtScannedNumber;
     private TextInputEditText txtCtNr, txtPartNr1, txtDNr, txtQtty1;
-
     private TextInputEditText txtCName, txtPartNr2, txtCustN, txtQtty2, txtOrderNr;
+    private TextInputLayout txtQtty1Field, txtQtty2Field;
 
     private RecyclerView listSmallLabels, listBigLabels;
     private AppCompatButton btnPlus1, btnPlus2;
@@ -103,11 +106,13 @@ public class MainActivity extends AppCompatActivity {
         txtPartNr1 = findViewById(R.id.txtPartNr1);
         txtDNr = findViewById(R.id.txtDNr);
         txtQtty1 = findViewById(R.id.txtQtty1);
+        txtQtty1Field = findViewById(R.id.txtQtty1Field);
 
         txtCName = findViewById(R.id.txtCName);
         txtPartNr2 = findViewById(R.id.txtPartNr2);
         txtCustN = findViewById(R.id.txtCustN);
         txtQtty2 = findViewById(R.id.txtQtty2);
+        txtQtty2Field = findViewById(R.id.txtQtty2Field);
         txtOrderNr = findViewById(R.id.txtOrderNr);
 
         listSmallLabels = findViewById(R.id.smallLabelListView);
@@ -470,6 +475,14 @@ public class MainActivity extends AppCompatActivity {
         String strQtty1 = txtQtty1.getText().toString();
         String strQtty2 = txtQtty2.getText().toString();
 
+        int quantity1 = 0, quantity2 = 0;
+        if (!strQtty1.isEmpty()) {
+            quantity1 = Integer.parseInt(strQtty1);
+        }
+        if (!strQtty2.isEmpty()) {
+            quantity2 = Integer.parseInt(strQtty2);
+        }
+
 
         ColorStateList greenColors = new ColorStateList(
             new int[][]{
@@ -502,12 +515,60 @@ public class MainActivity extends AppCompatActivity {
             result += 1;
             txtPartNr1.setBackgroundTintList(greenColors);
             txtPartNr2.setBackgroundTintList(greenColors);
+
+            if (smallListAdapter.getItemCount() > 0) {
+                StringBuilder quantityHelperString = new StringBuilder();
+                List<HashMap<String, String>> arrSmallLabels = smallListAdapter.getItems();
+                for (HashMap<String, String> smallLabelData: arrSmallLabels) {
+                    String partNr = smallLabelData.getOrDefault(Utils.PART_NR, "");
+                    if (strPartNr1.equals(partNr)) {
+                        String strQtty = smallLabelData.getOrDefault(Utils.QUANTITY, "0");
+                        int quantity = Integer.parseInt(strQtty);
+                        quantity1 += quantity;
+                        quantityHelperString.append(strQtty).append(" + ");
+                    }
+                }
+                if (quantityHelperString.toString().isEmpty()) {
+                    txtQtty1Field.setHelperText("");
+                } else {
+                    quantityHelperString.append(strQtty1.isEmpty() ? "0" : strQtty1);
+                    quantityHelperString.append(" = ").append(quantity1);
+                    txtQtty1Field.setHelperText(quantityHelperString.toString());
+                }
+            } else {
+                txtQtty1Field.setHelperText("");
+            }
+
+            if (bigListAdapter.getItemCount() > 0) {
+                StringBuilder quantityHelperString = new StringBuilder();
+                List<HashMap<String, String>> arrBigLabels = bigListAdapter.getItems();
+                for (HashMap<String, String> bigLabelData: arrBigLabels) {
+                    String partNr = bigLabelData.getOrDefault(Utils.PART_NR, "");
+                    if (strPartNr2.equals(partNr)) {
+                        String strQtty = bigLabelData.getOrDefault(Utils.QUANTITY, "0");
+                        int quantity = Integer.parseInt(strQtty);
+                        quantity2 += quantity;
+                        quantityHelperString.append(strQtty).append(" + ");
+                    }
+                }
+                if (quantityHelperString.toString().isEmpty()) {
+                    txtQtty2Field.setHelperText("");
+                } else {
+                    quantityHelperString.append(strQtty1.isEmpty() ? "0" : strQtty1);
+                    quantityHelperString.append(" = ").append(quantity2);
+                    txtQtty2Field.setHelperText(quantityHelperString.toString());
+                }
+
+
+            } else {
+                txtQtty2Field.setHelperText("");
+            }
         } else {
             txtPartNr1.setBackgroundTintList(redColors);
             txtPartNr2.setBackgroundTintList(redColors);
         }
 
-        if (strQtty1.equals(strQtty2)) {
+        if (quantity1 == quantity2) {
             result += 1;
             txtQtty1.setBackgroundTintList(greenColors);
             txtQtty2.setBackgroundTintList(greenColors);
@@ -543,13 +604,13 @@ public class MainActivity extends AppCompatActivity {
                 .setCancelable(true);
         AlertDialog dialog = builder.create();
 
-        TextInputLayout cartonNameField = dialogView.findViewById(R.id.txtCartonNameField);
+        TextInputLayout cartonNumberField = dialogView.findViewById(R.id.txtCartonNumberField);
         TextInputLayout partNrField = dialogView.findViewById(R.id.txtPartNrField);
         TextInputLayout dNrField = dialogView.findViewById(R.id.txtDNrField);
         TextInputLayout quantityField = dialogView.findViewById(R.id.txtQuantityField);
         TextInputLayout orderNrField = dialogView.findViewById(R.id.txtOrderNrField);
 
-        TextInputEditText txtDialogCartonName = dialogView.findViewById(R.id.txtCartonName);
+        TextInputEditText txtDialogCartonNumber = dialogView.findViewById(R.id.txtCartonNumber);
         TextInputEditText txtDialogPartNr = dialogView.findViewById(R.id.txtPartNr);
         TextInputEditText txtDialogDNr = dialogView.findViewById(R.id.txtDNr);
         TextInputEditText txtDialogQuantity = dialogView.findViewById(R.id.txtQuantity);
@@ -561,20 +622,20 @@ public class MainActivity extends AppCompatActivity {
 
         if (isLeft) {
             orderNrField.setVisibility(GONE);
-            cartonNameField.setHint(getString(R.string.ct_nr));
+            cartonNumberField.setHint(getString(R.string.ct_nr));
             partNrField.setHint(getString(R.string.part_nr));
             dNrField.setHint(getString(R.string.d_nr));
             quantityField.setHint(R.string.qtty);
         } else {
             orderNrField.setVisibility(VISIBLE);
-            cartonNameField.setHint(getString(R.string.c_name));
+            cartonNumberField.setHint(getString(R.string.c_name));
             partNrField.setHint(getString(R.string.part_nr));
             dNrField.setHint(getString(R.string.cust_n));
             quantityField.setHint(R.string.qtty);
             orderNrField.setHint(R.string.order_nr);
         }
 
-        txtDialogCartonName.addTextChangedListener(new TextWatcher() {
+        txtDialogCartonNumber.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
 
@@ -587,7 +648,7 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public void afterTextChanged(Editable editable) {
-                if (txtDialogCartonName.getText().toString().isEmpty()) {
+                if (txtDialogCartonNumber.getText().toString().isEmpty()) {
                     btnAdd.setEnabled(false);
                 } else {
                     btnAdd.setEnabled(true);
@@ -597,7 +658,7 @@ public class MainActivity extends AppCompatActivity {
 
         btnAdd.setOnClickListener(view -> {
 
-            String cartonName = txtDialogCartonName.getText().toString();
+            String cartonName = txtDialogCartonNumber.getText().toString();
             String partNr = txtDialogPartNr.getText().toString();
             String dNr = txtDialogDNr.getText().toString();
             String quantity = txtDialogQuantity.getText().toString();
@@ -635,7 +696,7 @@ public class MainActivity extends AppCompatActivity {
         });
 
         btnClear.setOnClickListener(view -> {
-            txtDialogCartonName.setText("");
+            txtDialogCartonNumber.setText("");
             txtDialogPartNr.setText("");
             txtDialogDNr.setText("");
             txtDialogQuantity.setText("");
@@ -725,7 +786,7 @@ public class MainActivity extends AppCompatActivity {
                 "BigLabel", scannedNumber + 1, cName, partNr2, custN, qtty2, orderNr);
         result.append(strBigLabel);
 
-        for (int i = 1; i < smallListAdapter.getTotalItemsCount(); i++) {
+        for (int i = 1; i < smallListAdapter.getItemCount(); i++) {
             smallLabel = smallListAdapter.getItem(i);
 
             ctNr = smallLabel.getOrDefault(Utils.CARTON_NR, "");
@@ -740,7 +801,7 @@ public class MainActivity extends AppCompatActivity {
             result.append(strSmallLabel);
         }
 
-        for (int i = 1; i < bigListAdapter.getTotalItemsCount(); i++) {
+        for (int i = 1; i < bigListAdapter.getItemCount(); i++) {
             bigLabel = bigListAdapter.getItem(i);
             cName = bigLabel.getOrDefault(Utils.CARTON_NR, "");
             partNr2 = bigLabel.getOrDefault(Utils.PART_NR, "");
@@ -787,11 +848,13 @@ public class MainActivity extends AppCompatActivity {
         txtPartNr1.setText("");
         txtDNr.setText("");
         txtQtty1.setText("");
+        txtQtty1Field.setHelperText("");
 
         txtCName.setText("");
         txtPartNr2.setText("");
         txtCustN.setText("");
         txtQtty2.setText("");
+        txtQtty2Field.setHelperText("");
         txtOrderNr.setText("");
 
         smallListAdapter.clear();

@@ -23,7 +23,7 @@
             android:paddingVertical="4dp"/>
 
         <com.google.android.material.textfield.TextInputLayout
-            android:id="@+id/txtCartonNameField"
+            android:id="@+id/txtCartonNumberField"
             android:layout_width="match_parent"
             android:layout_height="60dp"
             style="@style/Widget.MaterialComponents.TextInputLayout.FilledBox.Dense"
@@ -32,7 +32,7 @@
 
             <!--this is the actual edit text which takes the input-->
             <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/txtCartonName"
+                android:id="@+id/txtCartonNumber"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:imeOptions="actionNext"

@@ -29,12 +29,12 @@ public class LabelsAdapter extends RecyclerView.Adapter<LabelsAdapter.ViewHolder
         notifyItemInserted(items.size() - 1);
     }
 
-    public HashMap<String, String> getItem(int position) {
-        return items.get(position);
+    public List<HashMap<String, String>> getItems() {
+        return items;
     }
 
-    public int getTotalItemsCount() {
-        return items.size();
+    public HashMap<String, String> getItem(int position) {
+        return items.get(position);
     }
 
     public void clear() {
@@ -44,13 +44,13 @@ public class LabelsAdapter extends RecyclerView.Adapter<LabelsAdapter.ViewHolder
 
     // ViewHolder class
     public static class ViewHolder extends RecyclerView.ViewHolder {
-        public TextView txtCartonName;
+        public TextView txtCartonNumber;
         public TextView txtQuantity;
 
         public ViewHolder(View view) {
             super(view);
             txtQuantity = view.findViewById(R.id.txtQuantity);
-            txtCartonName = view.findViewById(R.id.txtCartonName);
+            txtCartonNumber = view.findViewById(R.id.txtCartonNumber);
         }
     }
 
@@ -66,7 +66,7 @@ public class LabelsAdapter extends RecyclerView.Adapter<LabelsAdapter.ViewHolder
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         HashMap<String, String> labelData = items.get(position);
         holder.txtQuantity.setText(labelData.getOrDefault(Utils.QUANTITY, ""));
-        holder.txtCartonName.setText(labelData.getOrDefault(Utils.CARTON_NR, ""));
+        holder.txtCartonNumber.setText(labelData.getOrDefault(Utils.CARTON_NR, ""));
     }
 
     @Override
