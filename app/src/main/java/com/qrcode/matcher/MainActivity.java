@@ -493,12 +493,14 @@ public class MainActivity extends AppCompatActivity {
                     if (line.contains(strCtNr) && !strCtNr.isEmpty()) {
                         new MaterialAlertDialogBuilder(this)
                                 .setTitle("Error")
-                                .setMessage("Your Ct.Nr is existing. Do you want to clear current Ct.Nr?")
-                                .setNegativeButton("Yes", (dialogInterface, i) -> {
+                                .setMessage("ERROR DOUBLE CT-Nr, please repeat your scan")
+                                .setNegativeButton("OK", (dialogInterface, i) -> {
                                     txtCtNr.setText("");
-                                    dialogInterface.dismiss();
-                                })
-                                .setPositiveButton("No", (dialogInterface, i) -> {
+                                    txtPartNr1.setText("");
+                                    txtDNr.setText("");
+                                    txtQtty1.setText("");
+                                    txtQtty1Field.setHelperText("");
+
                                     dialogInterface.dismiss();
                                 })
                                 .show();
@@ -509,16 +511,48 @@ public class MainActivity extends AppCompatActivity {
                     if (line.contains(strCName) && strCName.isEmpty()) {
                         new MaterialAlertDialogBuilder(this)
                                 .setTitle("Error")
-                                .setMessage("Your C.Name is existing. Do you want to clear current C.Name?")
-                                .setNegativeButton("Yes", (dialogInterface, i) -> {
+                                .setMessage("ERROR DOUBLE C-Name, please repeat your scan")
+                                .setNegativeButton("OK", (dialogInterface, i) -> {
                                     txtCName.setText("");
-                                    dialogInterface.dismiss();
-                                })
-                                .setPositiveButton("No", (dialogInterface, i) -> {
+                                    txtPartNr2.setText("");
+                                    txtCustN.setText("");
+                                    txtQtty2.setText("");
+                                    txtQtty2Field.setHelperText("");
+                                    txtOrderNr.setText("");
                                     dialogInterface.dismiss();
                                 })
                                 .show();
                         btnPlus2.setEnabled(false);
+                        return true;
+                    }
+                }
+                return false;
+            } catch (IOException e) {
+                Log.e("ReadFile", "Error reading file", e);
+                return false;
+            }
+        }
+        return false;
+    }
+
+    private boolean isDialogCartonExisting(String cartonNr) {
+        String strCartonNr = String.format(Locale.getDefault(), "; %-12s ;", cartonNr);
+
+        SimpleDateFormat format = new SimpleDateFormat("ddMMyyyy", Locale.getDefault());
+        String strDate = format.format(new Date());
+        String fileName = String.format(Locale.getDefault(), "SCAN%s.txt", strDate);
+
+        if (Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)) {
+            File dir = Utils.getDocumentsDirectory(this);
+            File file = new File(dir, fileName);
+            if (!file.exists()) {
+                return false;
+            }
+
+            try (BufferedReader br = new BufferedReader(new FileReader(file))) {
+                String line;
+                while ((line = br.readLine()) != null) {
+                    if (line.contains(strCartonNr) && !strCartonNr.isEmpty()) {
                         return true;
                     }
                 }
@@ -722,7 +756,24 @@ public class MainActivity extends AppCompatActivity {
                 if (txtDialogCartonNumber.getText().toString().isEmpty()) {
                     btnAdd.setEnabled(false);
                 } else {
-                    btnAdd.setEnabled(true);
+                    if (isDialogCartonExisting(txtDialogCartonNumber.getText().toString())) {
+                        new MaterialAlertDialogBuilder(txtDialogCartonNumber.getContext())
+                                .setTitle("Error")
+                                .setMessage("ERROR DOUBLE Ct-Nr, please repeat your scan")
+                                .setNegativeButton("OK", (dialogInterface, i) -> {
+                                    txtDialogCartonNumber.setText("");
+                                    txtDialogPartNr.setText("");
+                                    txtDialogDNr.setText("");
+                                    txtDialogQuantity.setText("");
+                                    txtDialogOrderNr.setText("");
+                                    dialogInterface.dismiss();
+                                })
+                                .show();
+                        btnAdd.setEnabled(false);
+                    } else {
+                        btnAdd.setEnabled(true);
+                    }
+
                 }
             }
         });
