@@ -6,6 +6,7 @@ import static android.view.View.VISIBLE;
 import android.Manifest;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.res.ColorStateList;
 import android.graphics.Color;
@@ -99,6 +100,17 @@ public class MainActivity extends AppCompatActivity {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
+
+        TextView txtVersion = findViewById(R.id.txtVersion);
+        String version = "Unknown";
+        try {
+            PackageManager pm = getPackageManager();
+            PackageInfo pInfo = pm.getPackageInfo(getPackageName(), 0);
+            version = pInfo.versionName;
+        } catch (PackageManager.NameNotFoundException e) {
+            e.printStackTrace();
+        }
+        txtVersion.setText(String.format(Locale.getDefault(), "Version : %s", version));
 
         txtScanLabel = findViewById(R.id.txtScanLabel);
         txtScannedNumber = findViewById(R.id.txtScannedNumber);
