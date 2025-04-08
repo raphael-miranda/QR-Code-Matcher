@@ -6,7 +6,7 @@
     android:padding="4dp">
 
     <TextView
-        android:id="@+id/txtQuantity"
+        android:id="@+id/txtCartonNumber"
         android:layout_width="30dp"
         android:layout_height="wrap_content"
         android:textSize="16sp"/>
@@ -18,7 +18,7 @@
         android:text=" X "/>
 
     <TextView
-        android:id="@+id/txtCartonNumber"
+        android:id="@+id/txtQuantity"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_weight="1"

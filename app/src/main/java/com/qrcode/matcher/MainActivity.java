@@ -90,6 +90,33 @@ public class MainActivity extends AppCompatActivity {
 
     private boolean isContinue = false;
 
+
+    private ColorStateList greenColors = new ColorStateList(
+            new int[][]{
+                    new int[]{android.R.attr.state_focused}, // Focused
+                    new int[]{-android.R.attr.state_enabled}, // Disabled
+                    new int[]{} // Default
+            },
+            new int[]{
+                    Color.GREEN,
+                    Color.GREEN,
+                    Color.GREEN
+            }
+    );
+
+    private ColorStateList redColors = new ColorStateList(
+            new int[][]{
+                    new int[]{android.R.attr.state_focused}, // Focused
+                    new int[]{-android.R.attr.state_enabled}, // Disabled
+                    new int[]{} // Default
+            },
+            new int[]{
+                    Color.RED,
+                    Color.RED,
+                    Color.RED
+            }
+    );
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -308,12 +335,12 @@ public class MainActivity extends AppCompatActivity {
             txtQtty2.setEnabled(true);
             txtOrderNr.setEnabled(true);
         } else {
-            txtCtNr.setEnabled(false);
+            txtCtNr.setEnabled(true);
             txtPartNr1.setEnabled(false);
             txtDNr.setEnabled(false);
             txtQtty1.setEnabled(false);
 
-            txtCName.setEnabled(false);
+            txtCName.setEnabled(true);
             txtPartNr2.setEnabled(false);
             txtCustN.setEnabled(false);
             txtQtty2.setEnabled(false);
@@ -395,6 +422,7 @@ public class MainActivity extends AppCompatActivity {
             public void afterTextChanged(Editable editable) {
                 if (!(txtQtty2.getText().toString().isEmpty())) {
                     compare();
+                    txtCName.requestFocus();
                 }
             }
         });
@@ -547,7 +575,18 @@ public class MainActivity extends AppCompatActivity {
         return false;
     }
 
-    private boolean isDialogCartonExisting(String cartonNr) {
+    private boolean isDialogCartonExisting(String cartonNr, boolean isLeft) {
+        String oldCartonNr = "";
+        if (isLeft) {
+            oldCartonNr = txtCtNr.getText().toString();
+        } else {
+            oldCartonNr = txtCName.getText().toString();
+        }
+
+        if (cartonNr.equals(oldCartonNr)) {
+            return true;
+        }
+
         String strCartonNr = String.format(Locale.getDefault(), "; %-12s ;", cartonNr);
 
         SimpleDateFormat format = new SimpleDateFormat("ddMMyyyy", Locale.getDefault());
@@ -590,33 +629,6 @@ public class MainActivity extends AppCompatActivity {
         if (!strQtty2.isEmpty()) {
             quantity2 = Integer.parseInt(strQtty2);
         }
-
-
-        ColorStateList greenColors = new ColorStateList(
-            new int[][]{
-                new int[]{android.R.attr.state_focused}, // Focused
-                new int[]{-android.R.attr.state_enabled}, // Disabled
-                new int[]{} // Default
-            },
-            new int[]{
-                Color.GREEN,
-                Color.GREEN,
-                Color.GREEN
-            }
-        );
-
-        ColorStateList redColors = new ColorStateList(
-                new int[][]{
-                        new int[]{android.R.attr.state_focused}, // Focused
-                        new int[]{-android.R.attr.state_enabled}, // Disabled
-                        new int[]{} // Default
-                },
-                new int[]{
-                        Color.RED,
-                        Color.RED,
-                        Color.RED
-                }
-        );
 
         int result = 0;
         if (strPartNr1.equals(strPartNr2)) {
@@ -688,6 +700,7 @@ public class MainActivity extends AppCompatActivity {
         if (result == 2) {
             if (!isCartonExisting()) {
                 btnNext.setEnabled(true);
+                btnNext.requestFocus();
             } else {
                 btnNext.setEnabled(false);
             }
@@ -721,11 +734,11 @@ public class MainActivity extends AppCompatActivity {
                 .setCancelable(true);
         AlertDialog dialog = builder.create();
 
-        TextInputLayout cartonNumberField = dialogView.findViewById(R.id.txtCartonNumberField);
-        TextInputLayout partNrField = dialogView.findViewById(R.id.txtPartNrField);
-        TextInputLayout dNrField = dialogView.findViewById(R.id.txtDNrField);
-        TextInputLayout quantityField = dialogView.findViewById(R.id.txtQuantityField);
-        TextInputLayout orderNrField = dialogView.findViewById(R.id.txtOrderNrField);
+        TextInputLayout dlgCartonNumberField = dialogView.findViewById(R.id.txtCartonNumberField);
+        TextInputLayout dlgPartNrField = dialogView.findViewById(R.id.txtPartNrField);
+        TextInputLayout dlgDNrField = dialogView.findViewById(R.id.txtDNrField);
+        TextInputLayout dlgQuantityField = dialogView.findViewById(R.id.txtQuantityField);
+        TextInputLayout dlgOrderNrField = dialogView.findViewById(R.id.txtOrderNrField);
 
         TextInputEditText txtDialogCartonNumber = dialogView.findViewById(R.id.txtCartonNumber);
         TextInputEditText txtDialogPartNr = dialogView.findViewById(R.id.txtPartNr);
@@ -738,19 +751,22 @@ public class MainActivity extends AppCompatActivity {
         MaterialButton btnCancel = dialogView.findViewById(R.id.btnCancel);
 
         if (isLeft) {
-            orderNrField.setVisibility(GONE);
-            cartonNumberField.setHint(getString(R.string.ct_nr));
-            partNrField.setHint(getString(R.string.part_nr));
-            dNrField.setHint(getString(R.string.d_nr));
-            quantityField.setHint(R.string.qtty);
+            dlgOrderNrField.setVisibility(GONE);
+            dlgCartonNumberField.setHint(getString(R.string.ct_nr));
+            dlgPartNrField.setHint(getString(R.string.part_nr));
+            dlgDNrField.setHint(getString(R.string.d_nr));
+            dlgQuantityField.setHint(R.string.qtty);
         } else {
-            orderNrField.setVisibility(VISIBLE);
-            cartonNumberField.setHint(getString(R.string.c_name));
-            partNrField.setHint(getString(R.string.part_nr));
-            dNrField.setHint(getString(R.string.cust_n));
-            quantityField.setHint(R.string.qtty);
-            orderNrField.setHint(R.string.order_nr);
+            dlgOrderNrField.setVisibility(VISIBLE);
+            dlgCartonNumberField.setHint(getString(R.string.c_name));
+            dlgPartNrField.setHint(getString(R.string.part_nr));
+            dlgDNrField.setHint(getString(R.string.cust_n));
+            dlgQuantityField.setHint(R.string.qtty);
+            dlgOrderNrField.setHint(R.string.order_nr);
         }
+
+        txtDialogCartonNumber.requestFocus();
+        txtDialogCartonNumber.post(() -> txtDialogCartonNumber.setSelection(txtDialogCartonNumber.getText().length()));
 
         txtDialogCartonNumber.addTextChangedListener(new TextWatcher() {
             @Override
@@ -760,7 +776,21 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+                int count = txtDialogCartonNumber.getText().toString().length() - txtDialogCartonNumber.getText().toString().replaceAll("\\;","").length();
 
+                if(count==4) {
+                    txtDialogPartNr.setText(txtDialogCartonNumber.getText().toString().split(";")[1]);
+                    txtDialogDNr.setText(txtDialogCartonNumber.getText().toString().split(";")[2]);
+                    txtDialogQuantity.setText(txtDialogCartonNumber.getText().toString().split(";")[3]);
+                    txtDialogCartonNumber.setText(txtDialogCartonNumber.getText().toString().split(";")[0]);
+                }
+                if(count == 5) {
+                    txtDialogPartNr.setText(txtDialogCartonNumber.getText().toString().split(";")[1]);
+                    txtDialogDNr.setText(txtDialogCartonNumber.getText().toString().split(";")[2]);
+                    txtDialogQuantity.setText(txtDialogCartonNumber.getText().toString().split(";")[3]);
+                    txtDialogOrderNr.setText(txtDialogCartonNumber.getText().toString().split(";")[4]);
+                    txtDialogCartonNumber.setText(txtDialogCartonNumber.getText().toString().split(";")[0]);
+                }
             }
 
             @Override
@@ -768,7 +798,7 @@ public class MainActivity extends AppCompatActivity {
                 if (txtDialogCartonNumber.getText().toString().isEmpty()) {
                     btnAdd.setEnabled(false);
                 } else {
-                    if (isDialogCartonExisting(txtDialogCartonNumber.getText().toString())) {
+                    if (isDialogCartonExisting(txtDialogCartonNumber.getText().toString(), isLeft)) {
                         new MaterialAlertDialogBuilder(txtDialogCartonNumber.getContext())
                                 .setTitle("Error")
                                 .setMessage("ERROR DOUBLE Ct-Nr, please repeat your scan")
@@ -782,10 +812,11 @@ public class MainActivity extends AppCompatActivity {
                                 })
                                 .show();
                         btnAdd.setEnabled(false);
+                        txtDialogCartonNumber.setBackgroundTintList(redColors);
                     } else {
                         btnAdd.setEnabled(true);
+                        txtDialogCartonNumber.setBackgroundTintList(greenColors);
                     }
-
                 }
             }
         });

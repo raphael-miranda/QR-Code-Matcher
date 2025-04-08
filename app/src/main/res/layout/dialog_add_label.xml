@@ -38,7 +38,9 @@
                 android:imeOptions="actionNext"
                 android:nextFocusForward="@+id/txtPartNr1"
                 android:textAlignment="center"
-                android:textSize="18sp" />
+                android:textSize="18sp"
+                android:focusable="true"
+                android:focusableInTouchMode="true"/>
 
         </com.google.android.material.textfield.TextInputLayout>
 
