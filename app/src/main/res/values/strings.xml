@@ -28,8 +28,8 @@
 
     <!--  Settings Dialog -->
     <string name="settings_title">FTP Server</string>
-    <string name="host">Host Address</string>
-    <string name="port">Port Number</string>
+    <string name="host">FTP Server Address</string>
+    <string name="port">Port</string>
     <string name="username">User Name</string>
     <string name="password">Password</string>
     <string name="save">Save</string>

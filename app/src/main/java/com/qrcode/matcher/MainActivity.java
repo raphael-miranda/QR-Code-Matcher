@@ -14,6 +14,8 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.Handler;
+import android.os.Looper;
 import android.provider.Settings;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -43,6 +45,9 @@ import com.google.android.material.button.MaterialButton;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
+import com.jcraft.jsch.ChannelSftp;
+import com.jcraft.jsch.JSch;
+import com.jcraft.jsch.Session;
 import com.karumi.dexter.Dexter;
 import com.karumi.dexter.PermissionToken;
 import com.karumi.dexter.listener.PermissionDeniedResponse;
@@ -50,8 +55,12 @@ import com.karumi.dexter.listener.PermissionGrantedResponse;
 import com.karumi.dexter.listener.PermissionRequest;
 import com.karumi.dexter.listener.single.PermissionListener;
 
+import org.apache.commons.net.ftp.FTP;
+import org.apache.commons.net.ftp.FTPClient;
+
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -61,6 +70,8 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -71,10 +82,10 @@ public class MainActivity extends AppCompatActivity {
     private static final String IS_MANUAL = "is_manual";
     private static final String SCANNED_NUMBER = "scanned_number";
 
-
-    private TextView txtScanLabel;
     private TextView txtScannedNumber;
+    private TextInputLayout txtCtNrField, txtPartNrField1;
     private TextInputEditText txtCtNr, txtPartNr1, txtDNr, txtQtty1;
+    private TextInputLayout txtCNameField, txtPartNrField2;
     private TextInputEditText txtCName, txtPartNr2, txtCustN, txtQtty2, txtOrderNr;
     private TextInputLayout txtQtty1Field, txtQtty2Field;
 
@@ -139,15 +150,20 @@ public class MainActivity extends AppCompatActivity {
         }
         txtVersion.setText(String.format(Locale.getDefault(), "Version : %s", version));
 
-        txtScanLabel = findViewById(R.id.txtScanLabel);
         txtScannedNumber = findViewById(R.id.txtScannedNumber);
 
+        // Small Label
+        txtCtNrField = findViewById(R.id.txtCtNrField);
+        txtPartNrField1 = findViewById(R.id.txtPartNr1Field);
         txtCtNr = findViewById(R.id.txtCtNr);
         txtPartNr1 = findViewById(R.id.txtPartNr1);
         txtDNr = findViewById(R.id.txtDNr);
         txtQtty1 = findViewById(R.id.txtQtty1);
         txtQtty1Field = findViewById(R.id.txtQtty1Field);
 
+        // Big Label
+        txtCNameField = findViewById(R.id.txtCNameField);
+        txtPartNrField2 = findViewById(R.id.txtPartNr2Field);
         txtCName = findViewById(R.id.txtCName);
         txtPartNr2 = findViewById(R.id.txtPartNr2);
         txtCustN = findViewById(R.id.txtCustN);
@@ -284,7 +300,7 @@ public class MainActivity extends AppCompatActivity {
 
         SharedPreferences sharedPreferences = getSharedPreferences(getPackageName(), MODE_PRIVATE);
         txtHost.setText(sharedPreferences.getString(FTP_HOST, ""));
-        txtPortNumber.setText(String.valueOf(sharedPreferences.getInt(FTP_PORT, 21)));
+        txtPortNumber.setText(sharedPreferences.getString(FTP_PORT, ""));
         txtUserName.setText(sharedPreferences.getString(FTP_USERNAME, ""));
         txtPassword.setText(sharedPreferences.getString(FTP_PASSWORD, ""));
         checkboxManual.setChecked(sharedPreferences.getBoolean(IS_MANUAL, false));
@@ -293,10 +309,6 @@ public class MainActivity extends AppCompatActivity {
 
             String hostAddress = txtHost.getText().toString();
             String portNumber = txtPortNumber.getText().toString();
-            int port = 0;
-            if (!portNumber.isEmpty()) {
-                port = Integer.parseInt(portNumber);
-            }
             String username = txtUserName.getText().toString();
             String password = txtPassword.getText().toString();
             boolean isManual = checkboxManual.isChecked();
@@ -304,7 +316,7 @@ public class MainActivity extends AppCompatActivity {
             SharedPreferences sharedPreferences1 = getSharedPreferences(getPackageName(), MODE_PRIVATE);
             SharedPreferences.Editor editor = sharedPreferences1.edit();
             editor.putString(FTP_HOST, hostAddress);
-            editor.putInt(FTP_PORT, port);
+            editor.putString(FTP_PORT, portNumber);
             editor.putString(FTP_USERNAME, username);
             editor.putString(FTP_PASSWORD, password);
             editor.putBoolean(IS_MANUAL, isManual);
@@ -531,39 +543,45 @@ public class MainActivity extends AppCompatActivity {
                 String line;
                 while ((line = br.readLine()) != null) {
                     if (line.contains(strCtNr) && !strCtNr.isEmpty()) {
-                        new MaterialAlertDialogBuilder(this)
-                                .setTitle("Error")
-                                .setMessage("ERROR DOUBLE CT-Nr, please repeat your scan")
-                                .setNegativeButton("OK", (dialogInterface, i) -> {
-                                    txtCtNr.setText("");
-                                    txtPartNr1.setText("");
-                                    txtDNr.setText("");
-                                    txtQtty1.setText("");
-                                    txtQtty1Field.setHelperText("");
-
-                                    dialogInterface.dismiss();
-                                })
-                                .show();
+//                        new MaterialAlertDialogBuilder(this)
+//                                .setTitle("Error")
+//                                .setMessage("ERROR DOUBLE CT-Nr, please repeat your scan")
+//                                .setNegativeButton("OK", (dialogInterface, i) -> {
+//                                    txtCtNr.setText("");
+//                                    txtPartNr1.setText("");
+//                                    txtDNr.setText("");
+//                                    txtQtty1.setText("");
+//                                    txtQtty1Field.setHelperText("");
+//
+//                                    dialogInterface.dismiss();
+//                                })
+//                                .show();
+                        txtCtNrField.setError("DOUBLE CT-Nr");
                         btnPlus1.setEnabled(false);
                         return true;
+                    } else {
+                        txtCtNrField.setErrorEnabled(false);
                     }
 
                     if (line.contains(strCName) && strCName.isEmpty()) {
-                        new MaterialAlertDialogBuilder(this)
-                                .setTitle("Error")
-                                .setMessage("ERROR DOUBLE C-Name, please repeat your scan")
-                                .setNegativeButton("OK", (dialogInterface, i) -> {
-                                    txtCName.setText("");
-                                    txtPartNr2.setText("");
-                                    txtCustN.setText("");
-                                    txtQtty2.setText("");
-                                    txtQtty2Field.setHelperText("");
-                                    txtOrderNr.setText("");
-                                    dialogInterface.dismiss();
-                                })
-                                .show();
+//                        new MaterialAlertDialogBuilder(this)
+//                                .setTitle("Error")
+//                                .setMessage("ERROR DOUBLE C-Name, please repeat your scan")
+//                                .setNegativeButton("OK", (dialogInterface, i) -> {
+//                                    txtCName.setText("");
+//                                    txtPartNr2.setText("");
+//                                    txtCustN.setText("");
+//                                    txtQtty2.setText("");
+//                                    txtQtty2Field.setHelperText("");
+//                                    txtOrderNr.setText("");
+//                                    dialogInterface.dismiss();
+//                                })
+//                                .show();
+                        txtCNameField.setError("DOUBLE C-Name");
                         btnPlus2.setEnabled(false);
                         return true;
+                    } else {
+                        txtCNameField.setErrorEnabled(false);
                     }
                 }
                 return false;
@@ -705,17 +723,10 @@ public class MainActivity extends AppCompatActivity {
                 btnNext.setEnabled(false);
             }
 
-            txtScanLabel.setText(getString(R.string.match));
-            txtScanLabel.setBackgroundColor(Color.GREEN);
-            txtScanLabel.setTextColor(Color.WHITE);
-
             btnPlus1.setEnabled(false);
             btnPlus2.setEnabled(false);
         } else {
             btnNext.setEnabled(false);
-            txtScanLabel.setText(getString(R.string.not_match));
-            txtScanLabel.setBackgroundColor(Color.RED);
-            txtScanLabel.setTextColor(Color.WHITE);
 
             if (!txtCtNr.getText().toString().isEmpty()) {
                 btnPlus1.setEnabled(true);
@@ -725,6 +736,10 @@ public class MainActivity extends AppCompatActivity {
             }
         }
     }
+
+    // For add label dialog
+    TextInputLayout dlgCartonNumberField;
+    TextInputLayout dlgPartNrField;
 
     TextInputEditText txtDialogCartonNumber;
     TextInputEditText txtDialogPartNr;
@@ -741,8 +756,10 @@ public class MainActivity extends AppCompatActivity {
                 .setCancelable(true);
         AlertDialog dialog = builder.create();
 
-        TextInputLayout dlgCartonNumberField = dialogView.findViewById(R.id.txtCartonNumberField);
-        TextInputLayout dlgPartNrField = dialogView.findViewById(R.id.txtPartNrField);
+        TextView txtDlgTitle = dialogView.findViewById(R.id.txtDlgTitle);
+
+        dlgCartonNumberField = dialogView.findViewById(R.id.txtCartonNumberField);
+        dlgPartNrField = dialogView.findViewById(R.id.txtPartNrField);
         TextInputLayout dlgDNrField = dialogView.findViewById(R.id.txtDNrField);
         TextInputLayout dlgQuantityField = dialogView.findViewById(R.id.txtQuantityField);
         TextInputLayout dlgOrderNrField = dialogView.findViewById(R.id.txtOrderNrField);
@@ -758,12 +775,14 @@ public class MainActivity extends AppCompatActivity {
         MaterialButton btnCancel = dialogView.findViewById(R.id.btnCancel);
 
         if (isLeft) {
+            txtDlgTitle.setText("Add Small Label");
             dlgOrderNrField.setVisibility(GONE);
             dlgCartonNumberField.setHint(getString(R.string.ct_nr));
             dlgPartNrField.setHint(getString(R.string.part_nr));
             dlgDNrField.setHint(getString(R.string.d_nr));
             dlgQuantityField.setHint(R.string.qtty);
         } else {
+            txtDlgTitle.setText("Add Big Label");
             dlgOrderNrField.setVisibility(VISIBLE);
             dlgCartonNumberField.setHint(getString(R.string.c_name));
             dlgPartNrField.setHint(getString(R.string.part_nr));
@@ -867,22 +886,12 @@ public class MainActivity extends AppCompatActivity {
             btnDialogAdd.setEnabled(false);
         } else {
             if (isDialogCartonExisting(txtDialogCartonNumber.getText().toString(), isLeft)) {
-                new MaterialAlertDialogBuilder(txtDialogCartonNumber.getContext())
-                        .setTitle("Error")
-                        .setMessage("ERROR DOUBLE Ct-Nr, please repeat your scan")
-                        .setNegativeButton("OK", (dialogInterface, i) -> {
-                            txtDialogCartonNumber.setText("");
-                            txtDialogPartNr.setText("");
-                            txtDialogDNr.setText("");
-                            txtDialogQuantity.setText("");
-                            txtDialogOrderNr.setText("");
-                            dialogInterface.dismiss();
-                        })
-                        .show();
+                dlgCartonNumberField.setError("DOUBLE Ct-Nr");
                 btnDialogAdd.setEnabled(false);
                 txtDialogCartonNumber.setBackgroundTintList(redColors);
             } else {
-                if (txtDialogPartNr.getText().toString().isEmpty() ||
+                dlgCartonNumberField.setErrorEnabled(false);
+                if (txtDialogCartonNumber.getText().toString().isEmpty() ||
                     txtDialogPartNr.getText().toString().isEmpty() ||
                     txtDialogQuantity.getText().toString().isEmpty()) {
                     btnDialogAdd.setEnabled(false);
@@ -911,21 +920,7 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-            int count = txtDialogCartonNumber.getText().toString().length() - txtDialogCartonNumber.getText().toString().replaceAll("\\;","").length();
 
-            if(count==4) {
-                txtDialogPartNr.setText(txtDialogCartonNumber.getText().toString().split(";")[1]);
-                txtDialogDNr.setText(txtDialogCartonNumber.getText().toString().split(";")[2]);
-                txtDialogQuantity.setText(txtDialogCartonNumber.getText().toString().split(";")[3]);
-                txtDialogCartonNumber.setText(txtDialogCartonNumber.getText().toString().split(";")[0]);
-            }
-            if(count == 5) {
-                txtDialogPartNr.setText(txtDialogCartonNumber.getText().toString().split(";")[1]);
-                txtDialogDNr.setText(txtDialogCartonNumber.getText().toString().split(";")[2]);
-                txtDialogQuantity.setText(txtDialogCartonNumber.getText().toString().split(";")[3]);
-                txtDialogOrderNr.setText(txtDialogCartonNumber.getText().toString().split(";")[4]);
-                txtDialogCartonNumber.setText(txtDialogCartonNumber.getText().toString().split(";")[0]);
-            }
         }
 
         @Override
@@ -1064,9 +1059,6 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void reset() {
-        txtScanLabel.setText(getString(R.string.scan_label));
-        txtScanLabel.setBackgroundColor(Color.TRANSPARENT);
-        txtScanLabel.setTextColor(Color.BLACK);
 
         txtCtNr.setText("");
         txtPartNr1.setText("");
@@ -1100,9 +1092,13 @@ public class MainActivity extends AppCompatActivity {
         String host = sharedPreferences.getString(FTP_HOST, "");
         String username = sharedPreferences.getString(FTP_USERNAME, "");
         String password = sharedPreferences.getString(FTP_PASSWORD, "");
-        int port = sharedPreferences.getInt(FTP_PORT, 21); // Default FTP port = 21
+        String portString = sharedPreferences.getString(FTP_PORT, "");
+        int ftpPort = 21;
+        if (!portString.isEmpty()) {
+            ftpPort = Integer.parseInt(portString);
+        }
 
-        if (host.isEmpty() || !isValidUrl(host) || !isValidPort(port)) {
+        if (host.isEmpty() || !isValidUrl(host)) {
             new MaterialAlertDialogBuilder(this)
                     .setTitle("Error")
                     .setMessage("Please set valid FTP server url and port number in Settings. Do you want to create new one without uploading?")
@@ -1116,28 +1112,11 @@ public class MainActivity extends AppCompatActivity {
                     })
                     .show();
         } else {
-            SimpleDateFormat format = new SimpleDateFormat("ddMMyyyy", Locale.getDefault());
-            String strDate = format.format(new Date());
-            String fileName = String.format(Locale.getDefault(), "SCAN%s.txt", strDate);
-
-            File dir = Utils.getDocumentsDirectory(this);
-            File file = new File(dir, fileName);
-            String localPath = file.getAbsolutePath();
-
-            new Thread(() -> {
-                String remoteDir = "/uploads/";
-
-                boolean uploaded = FTPUploader.uploadFile(
-                        host, username, password, port, remoteDir, localPath);
-
-                runOnUiThread(() -> {
-                    if (uploaded) {
-                        Toast.makeText(this, "File uploaded successfully", Toast.LENGTH_SHORT).show();
-                    } else {
-                        Toast.makeText(this, "Upload failed", Toast.LENGTH_SHORT).show();
-                    }
-                });
-            }).start();
+            if (portString.isEmpty()) {
+                uploadFileUsingFTP(host, username, password);
+            } else {
+                uploadFileUsingSFTP(host, ftpPort, username, password);
+            }
             isContinue = true;
         }
     }
@@ -1148,5 +1127,117 @@ public class MainActivity extends AppCompatActivity {
 
     private boolean isValidPort(int port) {
         return port >= 1 && port <= 65535;
+    }
+
+    private void uploadFileUsingFTP(final String ftpServer, final String ftpUsername, final String ftpPassword) {
+        ExecutorService executor = Executors.newSingleThreadExecutor();
+        Handler handler = new Handler(Looper.getMainLooper());
+
+        executor.execute(() -> {
+            FTPClient ftpClient = new FTPClient();
+            String errorMessage = null;
+            boolean success = false;
+
+            try {
+                SimpleDateFormat format = new SimpleDateFormat("ddMMyyyy", Locale.getDefault());
+                String strDate = format.format(new Date());
+                String fileName = String.format(Locale.getDefault(), "SCAN%s.txt", strDate);
+
+                File dir = Utils.getDocumentsDirectory(this);
+                File file = new File(dir, fileName);
+
+                if (!file.exists()) {
+                    errorMessage = "There is no file to upload!";
+                } else {
+                    ftpClient.connect(ftpServer);
+                    ftpClient.login(ftpUsername, ftpPassword);
+                    ftpClient.enterLocalPassiveMode();
+                    ftpClient.setFileType(FTP.BINARY_FILE_TYPE);
+
+                    FileInputStream inputStream = new FileInputStream(file);
+                    success = ftpClient.storeFile(file.getName(), inputStream);
+                    inputStream.close();
+                }
+            } catch (Exception e) {
+                errorMessage = "Error uploading file: " + e.getMessage();
+                Log.e("FTP", errorMessage);
+            } finally {
+                try {
+                    ftpClient.logout();
+                    ftpClient.disconnect();
+                } catch (Exception e) {
+                    Log.e("FTP", "Error disconnecting: " + e.getMessage());
+                }
+            }
+
+            boolean finalSuccess = success;
+            String finalErrorMessage = errorMessage;
+
+            handler.post(() -> {
+                if (finalSuccess) {
+                    Toast.makeText(this, "File uploaded successfully", Toast.LENGTH_SHORT).show();
+                } else {
+                    Toast.makeText(this, "Upload failed: " + (finalErrorMessage != null ? finalErrorMessage : "Unknown error occurred."), Toast.LENGTH_SHORT).show();
+                }
+            });
+        });
+    }
+
+
+    private void uploadFileUsingSFTP(final String host, final int port, final String username, final String password) {
+        ExecutorService executor = Executors.newSingleThreadExecutor();
+        Handler handler = new Handler(Looper.getMainLooper());
+
+        executor.execute(() -> {
+            String errorMessage = null;
+            boolean success = false;
+
+            try {
+                SimpleDateFormat format = new SimpleDateFormat("ddMMyyyy", Locale.getDefault());
+                String strDate = format.format(new Date());
+                String fileName = String.format(Locale.getDefault(), "SCAN%s.txt", strDate);
+
+                File dir = Utils.getDocumentsDirectory(this);
+                File file = new File(dir, fileName);
+
+                if (!file.exists()) {
+                    errorMessage = "There is no file to upload!";
+                } else {
+                    JSch jsch = new JSch();
+                    Session session = jsch.getSession(username, host, port);
+                    session.setPassword(password);
+
+                    java.util.Properties config = new java.util.Properties();
+                    config.put("StrictHostKeyChecking", "no");
+                    session.setConfig(config);
+                    session.connect();
+
+                    ChannelSftp channel = (ChannelSftp) session.openChannel("sftp");
+                    channel.connect();
+
+                    FileInputStream inputStream = new FileInputStream(file);
+                    channel.put(inputStream, file.getName());
+                    inputStream.close();
+
+                    channel.disconnect();
+                    session.disconnect();
+                    success = true;
+                }
+            } catch (Exception e) {
+                errorMessage = "Error uploading file: " + e.getMessage();
+                Log.e("SFTP", errorMessage, e);
+            }
+
+            boolean finalSuccess = success;
+            String finalErrorMessage = errorMessage;
+
+            handler.post(() -> {
+                if (finalSuccess) {
+                    Toast.makeText(this, "File uploaded successfully", Toast.LENGTH_SHORT).show();
+                } else {
+                    Toast.makeText(this, "Upload failed: " + (finalErrorMessage != null ? finalErrorMessage : "Unknown error occurred."), Toast.LENGTH_SHORT).show();
+                }
+            });
+        });
     }
 }

@@ -44,4 +44,5 @@ dependencies {
     implementation(libs.dexter)
     implementation(libs.commons.net)
     implementation(libs.jcifs.ng)
+    implementation(libs.jsch)
 }
