@@ -24,6 +24,7 @@ import android.util.Patterns;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.CheckBox;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -76,7 +77,7 @@ import java.util.concurrent.Executors;
 public class MainActivity extends AppCompatActivity {
 
     private static final String FTP_HOST = "ftp_host";
-    private static final String FTP_PORT = "ftp_port";
+    private static final String FTP_PORT = "ftp_portNumber";
     private static final String FTP_USERNAME = "ftp_username";
     private static final String FTP_PASSWORD = "ftp_password";
     private static final String IS_MANUAL = "is_manual";
@@ -336,6 +337,7 @@ public class MainActivity extends AppCompatActivity {
         SharedPreferences sharedPreferences = getSharedPreferences(getPackageName(), MODE_PRIVATE);
         boolean isManual = sharedPreferences.getBoolean(IS_MANUAL, false);
         if (isManual) {
+            txtCtNr.setShowSoftInputOnFocus(true);
             txtCtNr.setEnabled(true);
             txtPartNr1.setEnabled(true);
             txtDNr.setEnabled(true);
@@ -347,11 +349,13 @@ public class MainActivity extends AppCompatActivity {
             txtQtty2.setEnabled(true);
             txtOrderNr.setEnabled(true);
         } else {
+            txtCtNr.setShowSoftInputOnFocus(false);
             txtCtNr.setEnabled(true);
             txtPartNr1.setEnabled(false);
             txtDNr.setEnabled(false);
             txtQtty1.setEnabled(false);
 
+            txtCName.setShowSoftInputOnFocus(false);
             txtCName.setEnabled(true);
             txtPartNr2.setEnabled(false);
             txtCustN.setEnabled(false);
@@ -361,9 +365,14 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void initLeftScan() {
-        txtCtNr.setFocusable(true);
-        txtCtNr.requestFocus();
+        SharedPreferences sharedPreferences = getSharedPreferences(getPackageName(), MODE_PRIVATE);
+        boolean isManual = sharedPreferences.getBoolean(IS_MANUAL, false);
 
+        txtCtNr.requestFocus();
+        if (!isManual) {
+            txtCtNr.setShowSoftInputOnFocus(false);
+            getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
+        }
         txtCtNr.post(() -> txtCtNr.setSelection(txtCtNr.getText().length()));
 
         txtCtNr.setOnKeyListener((view, keyCode, event) -> {
@@ -740,6 +749,7 @@ public class MainActivity extends AppCompatActivity {
     // For add label dialog
     TextInputLayout dlgCartonNumberField;
     TextInputLayout dlgPartNrField;
+    TextInputLayout dlgQuantityField;
 
     TextInputEditText txtDialogCartonNumber;
     TextInputEditText txtDialogPartNr;
@@ -761,7 +771,7 @@ public class MainActivity extends AppCompatActivity {
         dlgCartonNumberField = dialogView.findViewById(R.id.txtCartonNumberField);
         dlgPartNrField = dialogView.findViewById(R.id.txtPartNrField);
         TextInputLayout dlgDNrField = dialogView.findViewById(R.id.txtDNrField);
-        TextInputLayout dlgQuantityField = dialogView.findViewById(R.id.txtQuantityField);
+        dlgQuantityField = dialogView.findViewById(R.id.txtQuantityField);
         TextInputLayout dlgOrderNrField = dialogView.findViewById(R.id.txtOrderNrField);
 
         txtDialogCartonNumber = dialogView.findViewById(R.id.txtCartonNumber);
@@ -791,7 +801,24 @@ public class MainActivity extends AppCompatActivity {
             dlgOrderNrField.setHint(R.string.order_nr);
         }
 
+        SharedPreferences sharedPreferences = getSharedPreferences(getPackageName(), MODE_PRIVATE);
+        boolean isManual = sharedPreferences.getBoolean(IS_MANUAL, false);
+
         txtDialogCartonNumber.requestFocus();
+        if (!isManual) {
+            txtDialogCartonNumber.setShowSoftInputOnFocus(false);
+            getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
+
+            txtDialogPartNr.setEnabled(false);
+            txtDialogDNr.setEnabled(false);
+            txtDialogQuantity.setEnabled(false);
+            txtDialogOrderNr.setEnabled(false);
+        } else {
+            txtDialogPartNr.setEnabled(true);
+            txtDialogDNr.setEnabled(true);
+            txtDialogQuantity.setEnabled(true);
+            txtDialogOrderNr.setEnabled(true);
+        }
         txtDialogCartonNumber.post(() -> txtDialogCartonNumber.setSelection(txtDialogCartonNumber.getText().length()));
 
         txtDialogCartonNumber.addTextChangedListener(new TextWatcher() {
@@ -882,25 +909,47 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void checkAddLabelValidation(boolean isLeft) {
+        int correctResults = 0;
+
         if (txtDialogCartonNumber.getText().toString().isEmpty()) {
-            btnDialogAdd.setEnabled(false);
+            dlgCartonNumberField.setError("Empty Ct-Nr");
+            txtDialogCartonNumber.setBackgroundTintList(redColors);
         } else {
             if (isDialogCartonExisting(txtDialogCartonNumber.getText().toString(), isLeft)) {
                 dlgCartonNumberField.setError("DOUBLE Ct-Nr");
-                btnDialogAdd.setEnabled(false);
                 txtDialogCartonNumber.setBackgroundTintList(redColors);
             } else {
+                correctResults += 1;
                 dlgCartonNumberField.setErrorEnabled(false);
-                if (txtDialogCartonNumber.getText().toString().isEmpty() ||
-                    txtDialogPartNr.getText().toString().isEmpty() ||
-                    txtDialogQuantity.getText().toString().isEmpty()) {
-                    btnDialogAdd.setEnabled(false);
-                } else {
-                    btnDialogAdd.setEnabled(true);
-                }
-
                 txtDialogCartonNumber.setBackgroundTintList(greenColors);
             }
+        }
+
+        String strOldPartNr = txtPartNr1.getText().toString();
+        if (!isLeft) {
+            strOldPartNr = txtPartNr2.getText().toString();
+        }
+
+        if (!txtDialogPartNr.getText().toString().equals(strOldPartNr)) {
+            dlgPartNrField.setError("Invalid Part Number");
+            txtDialogPartNr.setBackgroundTintList(redColors);
+        } else {
+            dlgPartNrField.setErrorEnabled(false);
+            txtDialogPartNr.setBackgroundTintList(greenColors);
+            correctResults += 1;
+        }
+
+        if (txtDialogQuantity.getText().toString().isEmpty()) {
+            dlgQuantityField.setError("Empty Quentity");
+        } else {
+            dlgQuantityField.setErrorEnabled(false);
+            correctResults += 1;
+        }
+
+        if (correctResults == 3) {
+            btnDialogAdd.setEnabled(true);
+        } else {
+            btnDialogAdd.setEnabled(false);
         }
     }
 

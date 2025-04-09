@@ -25,7 +25,7 @@
         <com.google.android.material.textfield.TextInputLayout
             android:id="@+id/txtCartonNumberField"
             android:layout_width="match_parent"
-            android:layout_height="60dp"
+            android:layout_height="wrap_content"
             style="@style/Widget.MaterialComponents.TextInputLayout.FilledBox.Dense"
             android:hint="@string/ct_nr"
             android:layout_marginVertical="4dp">
@@ -38,7 +38,7 @@
                 android:imeOptions="actionNext"
                 android:inputType="text"
                 android:textAlignment="center"
-                android:textSize="18sp"
+                android:textSize="16sp"
                 android:focusable="true"
                 android:focusableInTouchMode="true"/>
 
@@ -47,7 +47,7 @@
         <com.google.android.material.textfield.TextInputLayout
             android:id="@+id/txtPartNrField"
             android:layout_width="match_parent"
-            android:layout_height="60dp"
+            android:layout_height="wrap_content"
             style="@style/Widget.MaterialComponents.TextInputLayout.FilledBox.Dense"
             android:hint="@string/part_nr"
             android:layout_marginVertical="4dp">
@@ -60,14 +60,14 @@
                 android:imeOptions="actionNext"
                 android:inputType="text"
                 android:textAlignment="center"
-                android:textSize="18sp"/>
+                android:textSize="16sp"/>
 
         </com.google.android.material.textfield.TextInputLayout>
 
         <com.google.android.material.textfield.TextInputLayout
             android:id="@+id/txtDNrField"
             android:layout_width="match_parent"
-            android:layout_height="60dp"
+            android:layout_height="wrap_content"
             style="@style/Widget.MaterialComponents.TextInputLayout.FilledBox.Dense"
             android:hint="@string/d_nr"
             android:layout_marginVertical="4dp">
@@ -80,14 +80,14 @@
                 android:imeOptions="actionNext"
                 android:inputType="text"
                 android:textAlignment="center"
-                android:textSize="18sp"/>
+                android:textSize="16sp"/>
 
         </com.google.android.material.textfield.TextInputLayout>
 
         <com.google.android.material.textfield.TextInputLayout
             android:id="@+id/txtQuantityField"
             android:layout_width="match_parent"
-            android:layout_height="60dp"
+            android:layout_height="wrap_content"
             style="@style/Widget.MaterialComponents.TextInputLayout.FilledBox.Dense"
             android:hint="@string/qtty"
             android:layout_marginVertical="4dp">
@@ -99,14 +99,14 @@
                 android:inputType="number"
                 android:imeOptions="actionNext"
                 android:textAlignment="center"
-                android:textSize="18sp"/>
+                android:textSize="16sp"/>
 
         </com.google.android.material.textfield.TextInputLayout>
 
         <com.google.android.material.textfield.TextInputLayout
             android:id="@+id/txtOrderNrField"
             android:layout_width="match_parent"
-            android:layout_height="60dp"
+            android:layout_height="wrap_content"
             style="@style/Widget.MaterialComponents.TextInputLayout.FilledBox.Dense"
             android:hint="@string/order_nr"
             android:layout_marginVertical="4dp">
@@ -118,14 +118,14 @@
                 android:imeOptions="actionDone"
                 android:inputType="text"
                 android:textAlignment="center"
-                android:textSize="18sp"/>
+                android:textSize="16sp"/>
 
         </com.google.android.material.textfield.TextInputLayout>
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnAdd"
             android:layout_width="match_parent"
-            android:layout_height="70dp"
+            android:layout_height="60dp"
             android:text="@string/add"
             android:textSize="20sp"
             android:textAllCaps="false"
@@ -145,7 +145,7 @@
                 android:layout_height="55dp"
                 android:layout_weight="1"
                 android:text="@string/clear"
-                android:textSize="17sp"
+                android:textSize="16sp"
                 android:textAllCaps="false"/>
 
             <com.google.android.material.button.MaterialButton
@@ -155,7 +155,7 @@
                 android:layout_weight="1"
                 android:layout_marginStart="20dp"
                 android:text="@string/cancel"
-                android:textSize="17sp"
+                android:textSize="16sp"
                 android:textAllCaps="false" />
 
         </LinearLayout>
