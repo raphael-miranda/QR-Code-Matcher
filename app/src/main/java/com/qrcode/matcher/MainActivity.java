@@ -726,6 +726,13 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    TextInputEditText txtDialogCartonNumber;
+    TextInputEditText txtDialogPartNr;
+    TextInputEditText txtDialogDNr;
+    TextInputEditText txtDialogQuantity;
+    TextInputEditText txtDialogOrderNr;
+    MaterialButton btnDialogAdd;
+
     private void showAddLabelDialog(boolean isLeft) {
         MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(this);
         LayoutInflater inflater = getLayoutInflater();
@@ -740,13 +747,13 @@ public class MainActivity extends AppCompatActivity {
         TextInputLayout dlgQuantityField = dialogView.findViewById(R.id.txtQuantityField);
         TextInputLayout dlgOrderNrField = dialogView.findViewById(R.id.txtOrderNrField);
 
-        TextInputEditText txtDialogCartonNumber = dialogView.findViewById(R.id.txtCartonNumber);
-        TextInputEditText txtDialogPartNr = dialogView.findViewById(R.id.txtPartNr);
-        TextInputEditText txtDialogDNr = dialogView.findViewById(R.id.txtDNr);
-        TextInputEditText txtDialogQuantity = dialogView.findViewById(R.id.txtQuantity);
-        TextInputEditText txtDialogOrderNr = dialogView.findViewById(R.id.txtOrderNr);
+        txtDialogCartonNumber = dialogView.findViewById(R.id.txtCartonNumber);
+        txtDialogPartNr = dialogView.findViewById(R.id.txtPartNr);
+        txtDialogDNr = dialogView.findViewById(R.id.txtDNr);
+        txtDialogQuantity = dialogView.findViewById(R.id.txtQuantity);
+        txtDialogOrderNr = dialogView.findViewById(R.id.txtOrderNr);
 
-        MaterialButton btnAdd = dialogView.findViewById(R.id.btnAdd);
+        btnDialogAdd = dialogView.findViewById(R.id.btnAdd);
         MaterialButton btnClear = dialogView.findViewById(R.id.btnClear);
         MaterialButton btnCancel = dialogView.findViewById(R.id.btnCancel);
 
@@ -795,33 +802,13 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public void afterTextChanged(Editable editable) {
-                if (txtDialogCartonNumber.getText().toString().isEmpty()) {
-                    btnAdd.setEnabled(false);
-                } else {
-                    if (isDialogCartonExisting(txtDialogCartonNumber.getText().toString(), isLeft)) {
-                        new MaterialAlertDialogBuilder(txtDialogCartonNumber.getContext())
-                                .setTitle("Error")
-                                .setMessage("ERROR DOUBLE Ct-Nr, please repeat your scan")
-                                .setNegativeButton("OK", (dialogInterface, i) -> {
-                                    txtDialogCartonNumber.setText("");
-                                    txtDialogPartNr.setText("");
-                                    txtDialogDNr.setText("");
-                                    txtDialogQuantity.setText("");
-                                    txtDialogOrderNr.setText("");
-                                    dialogInterface.dismiss();
-                                })
-                                .show();
-                        btnAdd.setEnabled(false);
-                        txtDialogCartonNumber.setBackgroundTintList(redColors);
-                    } else {
-                        btnAdd.setEnabled(true);
-                        txtDialogCartonNumber.setBackgroundTintList(greenColors);
-                    }
-                }
+                checkAddLabelValidation(isLeft);
             }
         });
+        txtDialogPartNr.addTextChangedListener(new AddDialogTextWatcher(isLeft));
+        txtDialogQuantity.addTextChangedListener(new AddDialogTextWatcher(isLeft));
 
-        btnAdd.setOnClickListener(view -> {
+        btnDialogAdd.setOnClickListener(view -> {
 
             String cartonName = txtDialogCartonNumber.getText().toString();
             String partNr = txtDialogPartNr.getText().toString();
@@ -873,6 +860,78 @@ public class MainActivity extends AppCompatActivity {
         btnCancel.setOnClickListener(view -> dialog.dismiss());
 
         dialog.show();
+    }
+
+    private void checkAddLabelValidation(boolean isLeft) {
+        if (txtDialogCartonNumber.getText().toString().isEmpty()) {
+            btnDialogAdd.setEnabled(false);
+        } else {
+            if (isDialogCartonExisting(txtDialogCartonNumber.getText().toString(), isLeft)) {
+                new MaterialAlertDialogBuilder(txtDialogCartonNumber.getContext())
+                        .setTitle("Error")
+                        .setMessage("ERROR DOUBLE Ct-Nr, please repeat your scan")
+                        .setNegativeButton("OK", (dialogInterface, i) -> {
+                            txtDialogCartonNumber.setText("");
+                            txtDialogPartNr.setText("");
+                            txtDialogDNr.setText("");
+                            txtDialogQuantity.setText("");
+                            txtDialogOrderNr.setText("");
+                            dialogInterface.dismiss();
+                        })
+                        .show();
+                btnDialogAdd.setEnabled(false);
+                txtDialogCartonNumber.setBackgroundTintList(redColors);
+            } else {
+                if (txtDialogPartNr.getText().toString().isEmpty() ||
+                    txtDialogPartNr.getText().toString().isEmpty() ||
+                    txtDialogQuantity.getText().toString().isEmpty()) {
+                    btnDialogAdd.setEnabled(false);
+                } else {
+                    btnDialogAdd.setEnabled(true);
+                }
+
+                txtDialogCartonNumber.setBackgroundTintList(greenColors);
+            }
+        }
+    }
+
+    private class AddDialogTextWatcher implements TextWatcher {
+
+        private boolean isLeft = false;
+
+        public AddDialogTextWatcher(boolean isLeft) {
+            super();
+            this.isLeft = isLeft;
+        }
+
+        @Override
+        public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
+        }
+
+        @Override
+        public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+            int count = txtDialogCartonNumber.getText().toString().length() - txtDialogCartonNumber.getText().toString().replaceAll("\\;","").length();
+
+            if(count==4) {
+                txtDialogPartNr.setText(txtDialogCartonNumber.getText().toString().split(";")[1]);
+                txtDialogDNr.setText(txtDialogCartonNumber.getText().toString().split(";")[2]);
+                txtDialogQuantity.setText(txtDialogCartonNumber.getText().toString().split(";")[3]);
+                txtDialogCartonNumber.setText(txtDialogCartonNumber.getText().toString().split(";")[0]);
+            }
+            if(count == 5) {
+                txtDialogPartNr.setText(txtDialogCartonNumber.getText().toString().split(";")[1]);
+                txtDialogDNr.setText(txtDialogCartonNumber.getText().toString().split(";")[2]);
+                txtDialogQuantity.setText(txtDialogCartonNumber.getText().toString().split(";")[3]);
+                txtDialogOrderNr.setText(txtDialogCartonNumber.getText().toString().split(";")[4]);
+                txtDialogCartonNumber.setText(txtDialogCartonNumber.getText().toString().split(";")[0]);
+            }
+        }
+
+        @Override
+        public void afterTextChanged(Editable editable) {
+            checkAddLabelValidation(isLeft);
+        }
     }
 
     private void onNew() {
