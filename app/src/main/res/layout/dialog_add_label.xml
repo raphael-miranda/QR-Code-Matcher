@@ -125,7 +125,7 @@
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnAdd"
             android:layout_width="match_parent"
-            android:layout_height="60dp"
+            android:layout_height="70dp"
             android:text="@string/add"
             android:textSize="20sp"
             android:textAllCaps="false"
@@ -142,7 +142,7 @@
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnClear"
                 android:layout_width="0dp"
-                android:layout_height="55dp"
+                android:layout_height="60dp"
                 android:layout_weight="1"
                 android:text="@string/clear"
                 android:textSize="16sp"
@@ -151,7 +151,7 @@
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnCancel"
                 android:layout_width="0dp"
-                android:layout_height="55dp"
+                android:layout_height="60dp"
                 android:layout_weight="1"
                 android:layout_marginStart="20dp"
                 android:text="@string/cancel"

@@ -255,11 +255,11 @@ public class MainActivity extends AppCompatActivity {
                 storagePermissionLauncher.launch(android.Manifest.permission.READ_MEDIA_IMAGES);
             }
 
-        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-            if (!android.os.Environment.isExternalStorageManager()) {
-                Intent intent = new Intent(Settings.ACTION_MANAGE_ALL_FILES_ACCESS_PERMISSION, Uri.parse("package:" + getPackageName()));
-                manageStorageLauncher.launch(intent);
-            }
+//        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+//            if (!android.os.Environment.isExternalStorageManager()) {
+//                Intent intent = new Intent(Settings.ACTION_MANAGE_ALL_FILES_ACCESS_PERMISSION, Uri.parse("package:" + getPackageName()));
+//                manageStorageLauncher.launch(intent);
+//            }
         } else {
             Dexter.withContext(getApplicationContext())
                     .withPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)
@@ -400,6 +400,7 @@ public class MainActivity extends AppCompatActivity {
                     txtDNr.setText(txtCtNr.getText().toString().split(";")[2]);
                     txtQtty1.setText(txtCtNr.getText().toString().split(";")[3]);
                     txtCtNr.setText(txtCtNr.getText().toString().split(";")[0]);
+                    txtCName.requestFocus();
                 }
             }
 
@@ -552,19 +553,6 @@ public class MainActivity extends AppCompatActivity {
                 String line;
                 while ((line = br.readLine()) != null) {
                     if (line.contains(strCtNr) && !strCtNr.isEmpty()) {
-//                        new MaterialAlertDialogBuilder(this)
-//                                .setTitle("Error")
-//                                .setMessage("ERROR DOUBLE CT-Nr, please repeat your scan")
-//                                .setNegativeButton("OK", (dialogInterface, i) -> {
-//                                    txtCtNr.setText("");
-//                                    txtPartNr1.setText("");
-//                                    txtDNr.setText("");
-//                                    txtQtty1.setText("");
-//                                    txtQtty1Field.setHelperText("");
-//
-//                                    dialogInterface.dismiss();
-//                                })
-//                                .show();
                         txtCtNrField.setError("DOUBLE CT-Nr");
                         btnPlus1.setEnabled(false);
                         return true;
@@ -573,19 +561,6 @@ public class MainActivity extends AppCompatActivity {
                     }
 
                     if (line.contains(strCName) && strCName.isEmpty()) {
-//                        new MaterialAlertDialogBuilder(this)
-//                                .setTitle("Error")
-//                                .setMessage("ERROR DOUBLE C-Name, please repeat your scan")
-//                                .setNegativeButton("OK", (dialogInterface, i) -> {
-//                                    txtCName.setText("");
-//                                    txtPartNr2.setText("");
-//                                    txtCustN.setText("");
-//                                    txtQtty2.setText("");
-//                                    txtQtty2Field.setHelperText("");
-//                                    txtOrderNr.setText("");
-//                                    dialogInterface.dismiss();
-//                                })
-//                                .show();
                         txtCNameField.setError("DOUBLE C-Name");
                         btnPlus2.setEnabled(false);
                         return true;
@@ -912,11 +887,22 @@ public class MainActivity extends AppCompatActivity {
         int correctResults = 0;
 
         if (txtDialogCartonNumber.getText().toString().isEmpty()) {
-            dlgCartonNumberField.setError("Empty Ct-Nr");
+            if (isLeft) {
+                dlgCartonNumberField.setError("Empty Ct-Nr");
+            } else {
+                dlgCartonNumberField.setError("Empty C-Name");
+            }
+
             txtDialogCartonNumber.setBackgroundTintList(redColors);
         } else {
             if (isDialogCartonExisting(txtDialogCartonNumber.getText().toString(), isLeft)) {
-                dlgCartonNumberField.setError("DOUBLE Ct-Nr");
+                if (isLeft) {
+                    dlgCartonNumberField.setError("DOUBLE Ct-Nr");
+                } else {
+                    dlgCartonNumberField.setError("DOUBLE C-Name");
+                }
+
+
                 txtDialogCartonNumber.setBackgroundTintList(redColors);
             } else {
                 correctResults += 1;
@@ -940,7 +926,7 @@ public class MainActivity extends AppCompatActivity {
         }
 
         if (txtDialogQuantity.getText().toString().isEmpty()) {
-            dlgQuantityField.setError("Empty Quentity");
+            dlgQuantityField.setError("Empty Quantity");
         } else {
             dlgQuantityField.setErrorEnabled(false);
             correctResults += 1;
@@ -1142,7 +1128,7 @@ public class MainActivity extends AppCompatActivity {
         String username = sharedPreferences.getString(FTP_USERNAME, "");
         String password = sharedPreferences.getString(FTP_PASSWORD, "");
         String portString = sharedPreferences.getString(FTP_PORT, "");
-        int ftpPort = 21;
+        int ftpPort = 0;
         if (!portString.isEmpty()) {
             ftpPort = Integer.parseInt(portString);
         }
