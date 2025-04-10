@@ -372,12 +372,12 @@
                 android:textAllCaps="false" />
 
             <androidx.appcompat.widget.AppCompatButton
-                android:id="@+id/btnNext"
+                android:id="@+id/btnUpload"
                 android:layout_width="0dp"
                 android:layout_height="60dp"
                 android:layout_weight="1"
                 android:layout_marginStart="20dp"
-                android:text="@string/next"
+                android:text="@string/upload"
                 android:textSize="20sp"
                 android:textAllCaps="true"
                 android:enabled="false"

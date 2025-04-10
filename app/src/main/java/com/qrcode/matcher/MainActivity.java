@@ -76,6 +76,9 @@ import java.util.concurrent.Executors;
 
 public class MainActivity extends AppCompatActivity {
 
+    public static final String FILE_DATE = "file_date";
+    public static final String FILE_COUNTER = "file_counter";
+
     private static final String FTP_HOST = "ftp_host";
     private static final String FTP_PORT = "ftp_portNumber";
     private static final String FTP_USERNAME = "ftp_username";
@@ -92,7 +95,7 @@ public class MainActivity extends AppCompatActivity {
 
     private RecyclerView listSmallLabels, listBigLabels;
     private AppCompatButton btnPlus1, btnPlus2;
-    private AppCompatButton btnNext;
+    private AppCompatButton btnUpload;
 
     LabelsAdapter smallListAdapter = new LabelsAdapter(new ArrayList<>());
     LabelsAdapter bigListAdapter = new LabelsAdapter(new ArrayList<>());
@@ -195,7 +198,9 @@ public class MainActivity extends AppCompatActivity {
         txtScannedNumber.setText(String.valueOf(scannedNumber));
 
         AppCompatButton btnViewData = findViewById(R.id.btnViewData);
-        btnNext = findViewById(R.id.btnNext);
+        btnUpload = findViewById(R.id.btnUpload);
+        checkUploadAvailable();
+
         AppCompatButton btnNew = findViewById(R.id.btnNew);
         AppCompatButton btnReset = findViewById(R.id.btnReset);
 
@@ -212,7 +217,12 @@ public class MainActivity extends AppCompatActivity {
             startActivity(intent);
         });
 
-        btnNext.setOnClickListener(view -> next());
+        btnUpload.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                upload();
+            }
+        });
 
         btnNew.setOnClickListener(view -> onNew());
 
@@ -364,6 +374,19 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    private void checkUploadAvailable() {
+        String fileName = getFileName();
+
+        File dir = Utils.getDocumentsDirectory(this);
+        File file = new File(dir, fileName);
+
+        if (file.exists()) {
+            btnUpload.setEnabled(true);
+        } else {
+            btnUpload.setEnabled(false);
+        }
+    }
+
     private void initLeftScan() {
         SharedPreferences sharedPreferences = getSharedPreferences(getPackageName(), MODE_PRIVATE);
         boolean isManual = sharedPreferences.getBoolean(IS_MANUAL, false);
@@ -393,20 +416,23 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-                int count = txtCtNr.getText().toString().length() - txtCtNr.getText().toString().replaceAll("\\;","").length();
+                String strCtNr = txtCtNr.getText().toString();
+                int count = strCtNr.split(";").length;
 
-                if(count==4) {
-                    txtPartNr1.setText(txtCtNr.getText().toString().split(";")[1]);
-                    txtDNr.setText(txtCtNr.getText().toString().split(";")[2]);
-                    txtQtty1.setText(txtCtNr.getText().toString().split(";")[3]);
-                    txtCtNr.setText(txtCtNr.getText().toString().split(";")[0]);
+                if(count == 4) {
+                    txtPartNr1.setText(strCtNr.split(";")[1]);
+                    txtDNr.setText(strCtNr.split(";")[2]);
+                    txtQtty1.setText(strCtNr.split(";")[3]);
+                    txtCtNr.setText(strCtNr.split(";")[0]);
                     txtCName.requestFocus();
                 }
             }
 
             @Override
             public void afterTextChanged(Editable editable) {
-                if (isCartonExisting()) btnNext.setEnabled(false);
+                if (!txtCtNr.getText().toString().isEmpty()) {
+                    compare();
+                }
             }
         });
 
@@ -476,21 +502,22 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-                int count = txtCName.getText().toString().length() - txtCName.getText().toString().replaceAll("\\;","").length();
+                String strCName = txtCName.getText().toString();
+                int count = strCName.split(";").length;
 
                 if(count == 5) {
-                    txtPartNr2.setText(txtCName.getText().toString().split(";")[1]);
-                    txtCustN.setText(txtCName.getText().toString().split(";")[2]);
-                    txtQtty2.setText(txtCName.getText().toString().split(";")[3]);
-                    txtOrderNr.setText(txtCName.getText().toString().split(";")[4]);
-                    txtCName.setText(txtCName.getText().toString().split(";")[0]);
+                    txtPartNr2.setText(strCName.split(";")[1]);
+                    txtCustN.setText(strCName.split(";")[2]);
+                    txtQtty2.setText(strCName.split(";")[3]);
+                    txtOrderNr.setText(strCName.split(";")[4]);
+                    txtCName.setText(strCName.split(";")[0]);
                 }
             }
 
             @Override
             public void afterTextChanged(Editable editable) {
-                if (isCartonExisting()) {
-                    btnNext.setEnabled(false);
+                if (!txtCName.getText().toString().isEmpty()) {
+                    compare();
                 }
             }
         });
@@ -538,9 +565,7 @@ public class MainActivity extends AppCompatActivity {
         String strCtNr = String.format(Locale.getDefault(), "; %-12s ;", txtCtNr.getText().toString());
         String strCName = String.format(Locale.getDefault(), "; %-12s ;", txtCName.getText().toString());
 
-        SimpleDateFormat format = new SimpleDateFormat("ddMMyyyy", Locale.getDefault());
-        String strDate = format.format(new Date());
-        String fileName = String.format(Locale.getDefault(), "SCAN%s.txt", strDate);
+        String fileName = getFileName();
 
         if (Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)) {
             File dir = Utils.getDocumentsDirectory(this);
@@ -560,13 +585,13 @@ public class MainActivity extends AppCompatActivity {
                         txtCtNrField.setErrorEnabled(false);
                     }
 
-                    if (line.contains(strCName) && strCName.isEmpty()) {
-                        txtCNameField.setError("DOUBLE C-Name");
-                        btnPlus2.setEnabled(false);
-                        return true;
-                    } else {
-                        txtCNameField.setErrorEnabled(false);
-                    }
+//                    if (line.contains(strCName) && strCName.isEmpty()) {
+//                        txtCNameField.setError("DOUBLE C-Name");
+//                        btnPlus2.setEnabled(false);
+//                        return true;
+//                    } else {
+                    txtCNameField.setErrorEnabled(false);
+
                 }
                 return false;
             } catch (IOException e) {
@@ -591,9 +616,7 @@ public class MainActivity extends AppCompatActivity {
 
         String strCartonNr = String.format(Locale.getDefault(), "; %-12s ;", cartonNr);
 
-        SimpleDateFormat format = new SimpleDateFormat("ddMMyyyy", Locale.getDefault());
-        String strDate = format.format(new Date());
-        String fileName = String.format(Locale.getDefault(), "SCAN%s.txt", strDate);
+        String fileName = getFileName();
 
         if (Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)) {
             File dir = Utils.getDocumentsDirectory(this);
@@ -701,16 +724,12 @@ public class MainActivity extends AppCompatActivity {
 
         if (result == 2) {
             if (!isCartonExisting()) {
-                btnNext.setEnabled(true);
-                btnNext.requestFocus();
-            } else {
-                btnNext.setEnabled(false);
+                saveAndNext();
             }
 
             btnPlus1.setEnabled(false);
             btnPlus2.setEnabled(false);
         } else {
-            btnNext.setEnabled(false);
 
             if (!txtCtNr.getText().toString().isEmpty()) {
                 btnPlus1.setEnabled(true);
@@ -804,20 +823,21 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-                int count = txtDialogCartonNumber.getText().toString().length() - txtDialogCartonNumber.getText().toString().replaceAll("\\;","").length();
+                String strCartonNumber = txtDialogCartonNumber.getText().toString();
+                int count = strCartonNumber.split(";").length;
 
-                if(count==4) {
-                    txtDialogPartNr.setText(txtDialogCartonNumber.getText().toString().split(";")[1]);
-                    txtDialogDNr.setText(txtDialogCartonNumber.getText().toString().split(";")[2]);
-                    txtDialogQuantity.setText(txtDialogCartonNumber.getText().toString().split(";")[3]);
-                    txtDialogCartonNumber.setText(txtDialogCartonNumber.getText().toString().split(";")[0]);
+                if (count == 4) {
+                    txtDialogPartNr.setText(strCartonNumber.split(";")[1]);
+                    txtDialogDNr.setText(strCartonNumber.split(";")[2]);
+                    txtDialogQuantity.setText(strCartonNumber.split(";")[3]);
+                    txtDialogCartonNumber.setText(strCartonNumber.split(";")[0]);
                 }
-                if(count == 5) {
-                    txtDialogPartNr.setText(txtDialogCartonNumber.getText().toString().split(";")[1]);
-                    txtDialogDNr.setText(txtDialogCartonNumber.getText().toString().split(";")[2]);
-                    txtDialogQuantity.setText(txtDialogCartonNumber.getText().toString().split(";")[3]);
-                    txtDialogOrderNr.setText(txtDialogCartonNumber.getText().toString().split(";")[4]);
-                    txtDialogCartonNumber.setText(txtDialogCartonNumber.getText().toString().split(";")[0]);
+                if (count == 5) {
+                    txtDialogPartNr.setText(strCartonNumber.split(";")[1]);
+                    txtDialogDNr.setText(strCartonNumber.split(";")[2]);
+                    txtDialogQuantity.setText(strCartonNumber.split(";")[3]);
+                    txtDialogOrderNr.setText(strCartonNumber.split(";")[4]);
+                    txtDialogCartonNumber.setText(strCartonNumber.split(";")[0]);
                 }
             }
 
@@ -895,14 +915,8 @@ public class MainActivity extends AppCompatActivity {
 
             txtDialogCartonNumber.setBackgroundTintList(redColors);
         } else {
-            if (isDialogCartonExisting(txtDialogCartonNumber.getText().toString(), isLeft)) {
-                if (isLeft) {
-                    dlgCartonNumberField.setError("DOUBLE Ct-Nr");
-                } else {
-                    dlgCartonNumberField.setError("DOUBLE C-Name");
-                }
-
-
+            if (isLeft && isDialogCartonExisting(txtDialogCartonNumber.getText().toString(), isLeft)) {
+                dlgCartonNumberField.setError("DOUBLE Ct-Nr");
                 txtDialogCartonNumber.setBackgroundTintList(redColors);
             } else {
                 correctResults += 1;
@@ -986,7 +1000,7 @@ public class MainActivity extends AppCompatActivity {
                 .show();
     }
 
-    private void next() {
+    private void saveAndNext() {
 
         HashMap<String, String> smallLabelData = new HashMap<>();
         smallLabelData.put(Utils.CARTON_NR, txtCtNr.getText().toString());
@@ -1014,6 +1028,7 @@ public class MainActivity extends AppCompatActivity {
         txtScannedNumber.setText(String.valueOf(scannedNumber + 1));
 
         reset();
+        checkUploadAvailable();
     }
 
     private String generateStringToSave(int scannedNumber) {
@@ -1074,9 +1089,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void saveData(String strData) {
 
-        SimpleDateFormat format = new SimpleDateFormat("ddMMyyyy", Locale.getDefault());
-        String strDate = format.format(new Date());
-        String fileName = String.format(Locale.getDefault(), "SCAN%s.txt", strDate);
+        String fileName = getFileName();
 
         if (Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)) {
             File dir = Utils.getDocumentsDirectory(this);
@@ -1116,7 +1129,6 @@ public class MainActivity extends AppCompatActivity {
         txtQtty1.setBackgroundTintList(txtCtNr.getBackgroundTintList());
         txtQtty2.setBackgroundTintList(txtCtNr.getBackgroundTintList());
 
-        btnNext.setEnabled(false);
         btnPlus1.setEnabled(false);
         btnPlus2.setEnabled(false);
     }
@@ -1139,6 +1151,7 @@ public class MainActivity extends AppCompatActivity {
                     .setMessage("Please set valid FTP server url and port number in Settings. Do you want to create new one without uploading?")
                     .setNegativeButton("Yes", (dialogInterface, i) -> {
                         isContinue = true;
+                        removeCurrentFile();
                         dialogInterface.dismiss();
                     })
                     .setPositiveButton("No", (dialogInterface, i) -> {
@@ -1160,10 +1173,6 @@ public class MainActivity extends AppCompatActivity {
         return url != null && Patterns.WEB_URL.matcher(url).matches();
     }
 
-    private boolean isValidPort(int port) {
-        return port >= 1 && port <= 65535;
-    }
-
     private void uploadFileUsingFTP(final String ftpServer, final String ftpUsername, final String ftpPassword) {
         ExecutorService executor = Executors.newSingleThreadExecutor();
         Handler handler = new Handler(Looper.getMainLooper());
@@ -1174,9 +1183,7 @@ public class MainActivity extends AppCompatActivity {
             boolean success = false;
 
             try {
-                SimpleDateFormat format = new SimpleDateFormat("ddMMyyyy", Locale.getDefault());
-                String strDate = format.format(new Date());
-                String fileName = String.format(Locale.getDefault(), "SCAN%s.txt", strDate);
+                String fileName = getFileName();
 
                 File dir = Utils.getDocumentsDirectory(this);
                 File file = new File(dir, fileName);
@@ -1211,13 +1218,33 @@ public class MainActivity extends AppCompatActivity {
             handler.post(() -> {
                 if (finalSuccess) {
                     Toast.makeText(this, "File uploaded successfully", Toast.LENGTH_SHORT).show();
+                    removeCurrentFile();
                 } else {
-                    Toast.makeText(this, "Upload failed: " + (finalErrorMessage != null ? finalErrorMessage : "Unknown error occurred."), Toast.LENGTH_SHORT).show();
+                    Toast.makeText(this, "Upload failed: " + (finalErrorMessage != null ? finalErrorMessage : "Unknown error occurred."), Toast.LENGTH_LONG).show();
                 }
             });
         });
     }
 
+    private String getFileName() {
+        SimpleDateFormat format = new SimpleDateFormat("ddMMyyyy", Locale.getDefault());
+        String strDate = format.format(new Date());
+
+        SharedPreferences sharedPreferences = getSharedPreferences(getPackageName(), MODE_PRIVATE);
+        String fileDate = sharedPreferences.getString(FILE_DATE, "");
+        int fileCounter = sharedPreferences.getInt(FILE_COUNTER, 1);
+
+        if (fileDate.isEmpty() || !strDate.equals(fileDate)) {
+            SharedPreferences.Editor editor = sharedPreferences.edit();
+            editor.putString(FILE_DATE, strDate);
+            editor.putInt(FILE_COUNTER, 1);
+            editor.apply();
+        }
+
+        String fileName = String.format(Locale.getDefault(), "SCAN%s-%02d.txt", strDate, fileCounter);
+
+        return fileName;
+    }
 
     private void uploadFileUsingSFTP(final String host, final int port, final String username, final String password) {
         ExecutorService executor = Executors.newSingleThreadExecutor();
@@ -1228,9 +1255,7 @@ public class MainActivity extends AppCompatActivity {
             boolean success = false;
 
             try {
-                SimpleDateFormat format = new SimpleDateFormat("ddMMyyyy", Locale.getDefault());
-                String strDate = format.format(new Date());
-                String fileName = String.format(Locale.getDefault(), "SCAN%s.txt", strDate);
+                String fileName = getFileName();
 
                 File dir = Utils.getDocumentsDirectory(this);
                 File file = new File(dir, fileName);
@@ -1268,11 +1293,35 @@ public class MainActivity extends AppCompatActivity {
 
             handler.post(() -> {
                 if (finalSuccess) {
+                    Log.d("========", "File uploaded successfully.");
                     Toast.makeText(this, "File uploaded successfully", Toast.LENGTH_SHORT).show();
+                    removeCurrentFile();
                 } else {
+                    Log.d("========", "Upload Failed: " + (finalErrorMessage != null ? finalErrorMessage : "Unknown error occurred."));
                     Toast.makeText(this, "Upload failed: " + (finalErrorMessage != null ? finalErrorMessage : "Unknown error occurred."), Toast.LENGTH_SHORT).show();
                 }
             });
         });
+    }
+
+    private void removeCurrentFile() {
+        String fileName = getFileName();
+        File dir = Utils.getDocumentsDirectory(this);
+        File file = new File(dir, fileName);
+        if (file.exists()) {
+            file.delete();
+        }
+
+        SimpleDateFormat format = new SimpleDateFormat("ddMMyyyy", Locale.getDefault());
+        String strDate = format.format(new Date());
+
+        SharedPreferences sharedPreferences = getSharedPreferences(getPackageName(), MODE_PRIVATE);
+        int fileCounter = sharedPreferences.getInt(FILE_COUNTER, 1);
+        fileCounter += 1;
+
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putString(FILE_DATE, strDate);
+        editor.putInt(FILE_COUNTER, fileCounter);
+        editor.apply();
     }
 }

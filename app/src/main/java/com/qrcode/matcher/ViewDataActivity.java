@@ -1,5 +1,9 @@
 package com.qrcode.matcher;
 
+import static com.qrcode.matcher.MainActivity.FILE_COUNTER;
+import static com.qrcode.matcher.MainActivity.FILE_DATE;
+
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Environment;
 import android.util.Log;
@@ -45,9 +49,7 @@ public class ViewDataActivity extends AppCompatActivity {
     private String readTextFile() {
         StringBuilder text = new StringBuilder();
 
-        SimpleDateFormat format = new SimpleDateFormat("ddMMyyyy", Locale.getDefault());
-        String strDate = format.format(new Date());
-        String fileName = String.format(Locale.getDefault(), "SCAN%s.txt", strDate);
+        String fileName = getFileName();
 
         if (Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)) {
             File dir = Utils.getDocumentsDirectory(this);
@@ -70,5 +72,26 @@ public class ViewDataActivity extends AppCompatActivity {
             text.append("External storage not available.");
         }
         return text.toString();
+    }
+
+
+    private String getFileName() {
+        SimpleDateFormat format = new SimpleDateFormat("ddMMyyyy", Locale.getDefault());
+        String strDate = format.format(new Date());
+
+        SharedPreferences sharedPreferences = getSharedPreferences(getPackageName(), MODE_PRIVATE);
+        String fileDate = sharedPreferences.getString(FILE_DATE, "");
+        int fileCounter = sharedPreferences.getInt(FILE_COUNTER, 1);
+
+        if (fileDate.isEmpty() || !strDate.equals(fileDate)) {
+            SharedPreferences.Editor editor = sharedPreferences.edit();
+            editor.putString(FILE_DATE, strDate);
+            editor.putInt(FILE_COUNTER, 1);
+            editor.apply();
+        }
+
+        String fileName = String.format(Locale.getDefault(), "SCAN%s-%02d.txt", strDate, fileCounter);
+
+        return fileName;
     }
 }
