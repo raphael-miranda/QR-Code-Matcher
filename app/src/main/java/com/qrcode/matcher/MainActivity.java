@@ -571,6 +571,8 @@ public class MainActivity extends AppCompatActivity {
             File dir = Utils.getDocumentsDirectory(this);
             File file = new File(dir, fileName);
             if (!file.exists()) {
+                txtCtNrField.setErrorEnabled(false);
+                txtCNameField.setErrorEnabled(false);
                 return false;
             }
 
@@ -585,11 +587,6 @@ public class MainActivity extends AppCompatActivity {
                         txtCtNrField.setErrorEnabled(false);
                     }
 
-//                    if (line.contains(strCName) && strCName.isEmpty()) {
-//                        txtCNameField.setError("DOUBLE C-Name");
-//                        btnPlus2.setEnabled(false);
-//                        return true;
-//                    } else {
                     txtCNameField.setErrorEnabled(false);
 
                 }
@@ -656,7 +653,7 @@ public class MainActivity extends AppCompatActivity {
         }
 
         int result = 0;
-        if (strPartNr1.equals(strPartNr2)) {
+        if (!strPartNr1.isEmpty() && strPartNr1.equals(strPartNr2)) {
             result += 1;
             txtPartNr1.setBackgroundTintList(greenColors);
             txtPartNr2.setBackgroundTintList(greenColors);
@@ -713,7 +710,7 @@ public class MainActivity extends AppCompatActivity {
             txtPartNr2.setBackgroundTintList(redColors);
         }
 
-        if (quantity1 == quantity2) {
+        if (quantity1 != 0 && (quantity1 == quantity2)) {
             result += 1;
             txtQtty1.setBackgroundTintList(greenColors);
             txtQtty2.setBackgroundTintList(greenColors);
@@ -1113,6 +1110,7 @@ public class MainActivity extends AppCompatActivity {
         txtDNr.setText("");
         txtQtty1.setText("");
         txtQtty1Field.setHelperText("");
+        txtCtNr.requestFocus();
 
         txtCName.setText("");
         txtPartNr2.setText("");
@@ -1305,11 +1303,17 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void removeCurrentFile() {
-        String fileName = getFileName();
         File dir = Utils.getDocumentsDirectory(this);
-        File file = new File(dir, fileName);
-        if (file.exists()) {
-            file.delete();
+        if (dir.exists() && dir.isDirectory()) {
+            File[] files = dir.listFiles();
+            if (files != null) {
+                for (File file : files) {
+                    if (file.isFile() && file.getName().startsWith("SCAN") && file.getName().endsWith(".txt")) {
+                        boolean deleted = file.delete();
+                        Log.d("FileDelete", file.getName() + (deleted ? " deleted." : " failed to delete."));
+                    }
+                }
+            }
         }
 
         SimpleDateFormat format = new SimpleDateFormat("ddMMyyyy", Locale.getDefault());
