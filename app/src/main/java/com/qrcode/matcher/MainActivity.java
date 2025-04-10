@@ -413,6 +413,11 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
+            }
+
+            @Override
+            public void afterTextChanged(Editable editable) {
                 String strCtNr = txtCtNr.getText().toString();
                 int count = strCtNr.split(";").length;
 
@@ -423,13 +428,12 @@ public class MainActivity extends AppCompatActivity {
                     txtCtNr.setText(strCtNr.split(";")[0]);
                     txtCName.requestFocus();
                 }
-            }
 
-            @Override
-            public void afterTextChanged(Editable editable) {
                 if (!txtCtNr.getText().toString().isEmpty()) {
                     isCartonExisting();
                     compare();
+                } else {
+                    txtCtNrField.setErrorEnabled(false);
                 }
             }
         });
@@ -500,6 +504,11 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
+            }
+
+            @Override
+            public void afterTextChanged(Editable editable) {
                 String strCName = txtCName.getText().toString();
                 int count = strCName.split(";").length;
 
@@ -510,10 +519,7 @@ public class MainActivity extends AppCompatActivity {
                     txtOrderNr.setText(strCName.split(";")[4]);
                     txtCName.setText(strCName.split(";")[0]);
                 }
-            }
 
-            @Override
-            public void afterTextChanged(Editable editable) {
                 if (!txtCName.getText().toString().isEmpty()) {
                     compare();
                 }
@@ -560,6 +566,12 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private boolean isCartonExisting() {
+        if (txtCtNr.getText().toString().isEmpty()) {
+            txtCtNrField.setErrorEnabled(false);
+            txtCNameField.setErrorEnabled(false);
+            return false;
+        }
+
         String strCtNr = String.format(Locale.getDefault(), "; %-12s ;", txtCtNr.getText().toString());
 
         String fileName = getFileName();
@@ -576,7 +588,7 @@ public class MainActivity extends AppCompatActivity {
             try (BufferedReader br = new BufferedReader(new FileReader(file))) {
                 String line;
                 while ((line = br.readLine()) != null) {
-                    if (line.contains(strCtNr) && !strCtNr.isEmpty()) {
+                    if (line.contains(strCtNr)) {
                         txtCtNrField.setError("DOUBLE CT-Nr");
                         btnPlus1.setEnabled(false);
                         return true;
@@ -1092,31 +1104,39 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void reset() {
+        new Handler(Looper.getMainLooper()).postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                // Code to run after delay
+                txtCtNr.setText("");
+                txtPartNr1.setText("");
+                txtDNr.setText("");
+                txtQtty1.setText("");
+                txtQtty1Field.setHelperText("");
 
-        txtCtNr.setText("");
-        txtPartNr1.setText("");
-        txtDNr.setText("");
-        txtQtty1.setText("");
-        txtQtty1Field.setHelperText("");
-        txtCtNr.requestFocus();
+                txtCName.setText("");
+                txtPartNr2.setText("");
+                txtCustN.setText("");
+                txtQtty2.setText("");
+                txtQtty2Field.setHelperText("");
+                txtOrderNr.setText("");
 
-        txtCName.setText("");
-        txtPartNr2.setText("");
-        txtCustN.setText("");
-        txtQtty2.setText("");
-        txtQtty2Field.setHelperText("");
-        txtOrderNr.setText("");
+                smallListAdapter.clear();
+                bigListAdapter.clear();
 
-        smallListAdapter.clear();
-        bigListAdapter.clear();
+                txtPartNr1.setBackgroundTintList(txtCtNr.getBackgroundTintList());
+                txtPartNr2.setBackgroundTintList(txtCtNr.getBackgroundTintList());
+                txtQtty1.setBackgroundTintList(txtCtNr.getBackgroundTintList());
+                txtQtty2.setBackgroundTintList(txtCtNr.getBackgroundTintList());
 
-        txtPartNr1.setBackgroundTintList(txtCtNr.getBackgroundTintList());
-        txtPartNr2.setBackgroundTintList(txtCtNr.getBackgroundTintList());
-        txtQtty1.setBackgroundTintList(txtCtNr.getBackgroundTintList());
-        txtQtty2.setBackgroundTintList(txtCtNr.getBackgroundTintList());
+                btnPlus1.setEnabled(false);
+                btnPlus2.setEnabled(false);
 
-        btnPlus1.setEnabled(false);
-        btnPlus2.setEnabled(false);
+                txtCtNr.requestFocus();
+            }
+        }, 1000);
+
+
     }
 
     private void upload() {
