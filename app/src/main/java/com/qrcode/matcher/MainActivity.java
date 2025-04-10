@@ -103,9 +103,6 @@ public class MainActivity extends AppCompatActivity {
     private ActivityResultLauncher<String> storagePermissionLauncher;
     private ActivityResultLauncher<Intent> manageStorageLauncher;
 
-    private boolean isContinue = false;
-
-
     private ColorStateList greenColors = new ColorStateList(
             new int[][]{
                     new int[]{android.R.attr.state_focused}, // Focused
@@ -431,6 +428,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void afterTextChanged(Editable editable) {
                 if (!txtCtNr.getText().toString().isEmpty()) {
+                    isCartonExisting();
                     compare();
                 }
             }
@@ -563,7 +561,6 @@ public class MainActivity extends AppCompatActivity {
 
     private boolean isCartonExisting() {
         String strCtNr = String.format(Locale.getDefault(), "; %-12s ;", txtCtNr.getText().toString());
-        String strCName = String.format(Locale.getDefault(), "; %-12s ;", txtCName.getText().toString());
 
         String fileName = getFileName();
 
@@ -981,15 +978,6 @@ public class MainActivity extends AppCompatActivity {
                 .setMessage("Are you sure to create new one?")
                 .setNegativeButton("Yes", (dialogInterface, i) -> {
                     upload();
-                    if (isContinue) {
-                        // set scanned number to 0
-                        SharedPreferences.Editor editor = getSharedPreferences(getPackageName(), MODE_PRIVATE).edit();
-                        editor.putInt(SCANNED_NUMBER, 0);
-                        editor.apply();
-                        txtScannedNumber.setText(String.valueOf(0));
-
-                        reset();
-                    }
 
                     dialogInterface.dismiss();
                 })
@@ -1148,12 +1136,17 @@ public class MainActivity extends AppCompatActivity {
                     .setTitle("Error")
                     .setMessage("Please set valid FTP server url and port number in Settings. Do you want to create new one without uploading?")
                     .setNegativeButton("Yes", (dialogInterface, i) -> {
-                        isContinue = true;
+                        // set scanned number to 0
+                        SharedPreferences.Editor editor = getSharedPreferences(getPackageName(), MODE_PRIVATE).edit();
+                        editor.putInt(SCANNED_NUMBER, 0);
+                        editor.apply();
+                        txtScannedNumber.setText(String.valueOf(0));
+                        reset();
+
                         removeCurrentFile();
                         dialogInterface.dismiss();
                     })
                     .setPositiveButton("No", (dialogInterface, i) -> {
-                        isContinue = false;
                         dialogInterface.dismiss();
                     })
                     .show();
@@ -1163,7 +1156,13 @@ public class MainActivity extends AppCompatActivity {
             } else {
                 uploadFileUsingSFTP(host, ftpPort, username, password);
             }
-            isContinue = true;
+
+            // set scanned number to 0
+            SharedPreferences.Editor editor = getSharedPreferences(getPackageName(), MODE_PRIVATE).edit();
+            editor.putInt(SCANNED_NUMBER, 0);
+            editor.apply();
+            txtScannedNumber.setText(String.valueOf(0));
+            reset();
         }
     }
 
@@ -1326,6 +1325,9 @@ public class MainActivity extends AppCompatActivity {
         SharedPreferences.Editor editor = sharedPreferences.edit();
         editor.putString(FILE_DATE, strDate);
         editor.putInt(FILE_COUNTER, fileCounter);
+        editor.putInt(SCANNED_NUMBER, 0);
         editor.apply();
+
+
     }
 }
