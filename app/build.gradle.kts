@@ -45,4 +45,5 @@ dependencies {
     implementation(libs.commons.net)
     implementation(libs.jcifs.ng)
     implementation(libs.jsch)
+    implementation(group = "com.hierynomus", name = "smbj", version = "0.13.0")
 }

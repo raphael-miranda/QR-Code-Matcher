@@ -10,14 +10,13 @@ import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.res.ColorStateList;
 import android.graphics.Color;
-import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.Looper;
-import android.provider.Settings;
 import android.text.Editable;
+import android.text.InputType;
 import android.text.TextWatcher;
 import android.util.Log;
 import android.util.Patterns;
@@ -43,9 +42,17 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.button.MaterialButton;
+import com.google.android.material.button.MaterialButtonToggleGroup;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
+import com.hierynomus.msdtyp.AccessMask;
+import com.hierynomus.mssmb2.SMB2CreateDisposition;
+import com.hierynomus.mssmb2.SMB2ShareAccess;
+import com.hierynomus.smbj.SMBClient;
+import com.hierynomus.smbj.auth.AuthenticationContext;
+import com.hierynomus.smbj.connection.Connection;
+import com.hierynomus.smbj.share.DiskShare;
 import com.jcraft.jsch.ChannelSftp;
 import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.Session;
@@ -65,9 +72,11 @@ import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -79,8 +88,10 @@ public class MainActivity extends AppCompatActivity {
     public static final String FILE_DATE = "file_date";
     public static final String FILE_COUNTER = "file_counter";
 
-    private static final String FTP_HOST = "ftp_host";
+    private static final String SERVER_TYPE = "server_type";
+    private static final String HOST_ADDRESS = "ftp_host";
     private static final String FTP_PORT = "ftp_portNumber";
+    private static final String SHARED_FOLDER = "shared_folder";
     private static final String FTP_USERNAME = "ftp_username";
     private static final String FTP_PASSWORD = "ftp_password";
     private static final String IS_MANUAL = "is_manual";
@@ -297,6 +308,15 @@ public class MainActivity extends AppCompatActivity {
                 .setCancelable(true);
         AlertDialog dialog = builder.create();
 
+        MaterialButtonToggleGroup toggleServerType = dialogView.findViewById(R.id.toggleServerType);
+        MaterialButton btnFtpServer = dialogView.findViewById(R.id.btnFtpServer);
+        MaterialButton btnSMBServer = dialogView.findViewById(R.id.btnSMBServer);
+
+        TextInputLayout fieldHostAddress = dialogView.findViewById(R.id.fieldHostAddress);
+        TextInputLayout fieldPort = dialogView.findViewById(R.id.fieldPort);
+        TextInputLayout fieldUsername = dialogView.findViewById(R.id.fieldUserName);
+        TextInputLayout fieldPassword = dialogView.findViewById(R.id.fieldPassword);
+
         TextInputEditText txtHost = dialogView.findViewById(R.id.txtHostAddress);
         TextInputEditText txtPortNumber = dialogView.findViewById(R.id.txtPortNumber);
         TextInputEditText txtUserName = dialogView.findViewById(R.id.txtUserName);
@@ -307,11 +327,75 @@ public class MainActivity extends AppCompatActivity {
         MaterialButton btnCancel = dialogView.findViewById(R.id.btnCancel);
 
         SharedPreferences sharedPreferences = getSharedPreferences(getPackageName(), MODE_PRIVATE);
-        txtHost.setText(sharedPreferences.getString(FTP_HOST, ""));
-        txtPortNumber.setText(sharedPreferences.getString(FTP_PORT, ""));
-        txtUserName.setText(sharedPreferences.getString(FTP_USERNAME, ""));
-        txtPassword.setText(sharedPreferences.getString(FTP_PASSWORD, ""));
+        if ("ftp".equals(sharedPreferences.getString(SERVER_TYPE, "ftp"))) {
+            toggleServerType.check(R.id.btnFtpServer);
+            fieldHostAddress.setHint(getString(R.string.host_address));
+            fieldPort.setHint(getString(R.string.port));
+            txtPortNumber.setInputType(InputType.TYPE_CLASS_NUMBER);
+            fieldUsername.setHint(getString(R.string.username));
+            fieldPassword.setHint(getString(R.string.password));
+
+            txtHost.setText(sharedPreferences.getString(HOST_ADDRESS, ""));
+            txtPortNumber.setText(sharedPreferences.getString(FTP_PORT, ""));
+            txtUserName.setText(sharedPreferences.getString(FTP_USERNAME, ""));
+            txtPassword.setText(sharedPreferences.getString(FTP_PASSWORD, ""));
+        } else if ("smb".equals(sharedPreferences.getString(SERVER_TYPE, "ftp"))) {
+            toggleServerType.check(R.id.btnSMBServer);
+            fieldHostAddress.setHint(getString(R.string.ftp_server_address));
+            fieldPort.setHint(getString(R.string.shared_folder));
+            txtPortNumber.setInputType(InputType.TYPE_CLASS_TEXT);
+            fieldUsername.setHint(getString(R.string.username));
+            fieldPassword.setHint(getString(R.string.password));
+
+            txtHost.setText(sharedPreferences.getString(HOST_ADDRESS, ""));
+            txtPortNumber.setText(sharedPreferences.getString(SHARED_FOLDER, ""));
+            txtUserName.setText(sharedPreferences.getString(FTP_USERNAME, ""));
+            txtPassword.setText(sharedPreferences.getString(FTP_PASSWORD, ""));
+        }
+
         checkboxManual.setChecked(sharedPreferences.getBoolean(IS_MANUAL, false));
+
+        toggleServerType.addOnButtonCheckedListener((group, checkedId, isChecked) -> {
+            if (isChecked) {
+                if (checkedId == R.id.btnFtpServer) {
+                    fieldHostAddress.setHint(getString(R.string.host_address));
+                    fieldPort.setHint(getString(R.string.port));
+                    txtPortNumber.setInputType(InputType.TYPE_CLASS_NUMBER);
+                    fieldUsername.setHint(getString(R.string.username));
+                    fieldPassword.setHint(getString(R.string.password));
+
+                    if ("smb".equals(sharedPreferences.getString(SERVER_TYPE, "ftp"))) {
+                        txtHost.setText("");
+                        txtPortNumber.setText("");
+                        txtUserName.setText("");
+                        txtPassword.setText("");
+                    } else {
+                        txtHost.setText(sharedPreferences.getString(HOST_ADDRESS, ""));
+                        txtPortNumber.setText(sharedPreferences.getString(FTP_PORT, ""));
+                        txtUserName.setText(sharedPreferences.getString(FTP_USERNAME, ""));
+                        txtPassword.setText(sharedPreferences.getString(FTP_PASSWORD, ""));
+                    }
+                } else if (checkedId == R.id.btnSMBServer) {
+                    fieldHostAddress.setHint(getString(R.string.host_address));
+                    fieldPort.setHint(getString(R.string.shared_folder));
+                    txtPortNumber.setInputType(InputType.TYPE_CLASS_TEXT);
+                    fieldUsername.setHint(getString(R.string.username));
+                    fieldPassword.setHint(getString(R.string.password));
+
+                    if ("ftp".equals(sharedPreferences.getString(SERVER_TYPE, "ftp"))) {
+                        txtHost.setText("");
+                        txtPortNumber.setText("");
+                        txtUserName.setText("");
+                        txtPassword.setText("");
+                    } else {
+                        txtHost.setText(sharedPreferences.getString(HOST_ADDRESS, ""));
+                        txtPortNumber.setText(sharedPreferences.getString(SHARED_FOLDER, ""));
+                        txtUserName.setText(sharedPreferences.getString(FTP_USERNAME, ""));
+                        txtPassword.setText(sharedPreferences.getString(FTP_PASSWORD, ""));
+                    }
+                }
+            }
+        });
 
         btnSave.setOnClickListener(view -> {
 
@@ -323,8 +407,14 @@ public class MainActivity extends AppCompatActivity {
 
             SharedPreferences sharedPreferences1 = getSharedPreferences(getPackageName(), MODE_PRIVATE);
             SharedPreferences.Editor editor = sharedPreferences1.edit();
-            editor.putString(FTP_HOST, hostAddress);
-            editor.putString(FTP_PORT, portNumber);
+            if (toggleServerType.getCheckedButtonId() == R.id.btnFtpServer) {
+                editor.putString(SERVER_TYPE, "ftp");
+                editor.putString(FTP_PORT, portNumber);
+            } else if (toggleServerType.getCheckedButtonId() == R.id.btnSMBServer) {
+                editor.putString(SERVER_TYPE, "smb");
+                editor.putString(SHARED_FOLDER, portNumber);
+            }
+            editor.putString(HOST_ADDRESS, hostAddress);
             editor.putString(FTP_USERNAME, username);
             editor.putString(FTP_PASSWORD, password);
             editor.putBoolean(IS_MANUAL, isManual);
@@ -1142,19 +1232,15 @@ public class MainActivity extends AppCompatActivity {
     private void upload() {
 
         SharedPreferences sharedPreferences = getSharedPreferences(getPackageName(), MODE_PRIVATE);
-        String host = sharedPreferences.getString(FTP_HOST, "");
+        String serverType = sharedPreferences.getString(SERVER_TYPE, "ftp");
+        String host = sharedPreferences.getString(HOST_ADDRESS, "");
         String username = sharedPreferences.getString(FTP_USERNAME, "");
         String password = sharedPreferences.getString(FTP_PASSWORD, "");
-        String portString = sharedPreferences.getString(FTP_PORT, "");
-        int ftpPort = 0;
-        if (!portString.isEmpty()) {
-            ftpPort = Integer.parseInt(portString);
-        }
 
         if (host.isEmpty() || !isValidUrl(host)) {
             new MaterialAlertDialogBuilder(this)
                     .setTitle("Error")
-                    .setMessage("Please set valid FTP server url and port number in Settings. Do you want to create new one without uploading?")
+                    .setMessage("Please set valid server address in Settings. Do you want to create new one without uploading?")
                     .setNegativeButton("Yes", (dialogInterface, i) -> {
                         // set scanned number to 0
                         SharedPreferences.Editor editor = getSharedPreferences(getPackageName(), MODE_PRIVATE).edit();
@@ -1171,10 +1257,21 @@ public class MainActivity extends AppCompatActivity {
                     })
                     .show();
         } else {
-            if (portString.isEmpty()) {
-                uploadFileUsingFTP(host, username, password);
-            } else {
-                uploadFileUsingSFTP(host, ftpPort, username, password);
+
+            if (serverType.equals("ftp")) {
+                String portString = sharedPreferences.getString(FTP_PORT, "");
+                if (portString.isEmpty()) {
+                    uploadFileUsingFTP(host, username, password);
+                } else {
+                    int ftpPort = 0;
+                    if (!portString.isEmpty()) {
+                        ftpPort = Integer.parseInt(portString);
+                    }
+                    uploadFileUsingSFTP(host, ftpPort, username, password);
+                }
+            } else if (serverType.equals("smb")) {
+                String sharedFolder = sharedPreferences.getString(SHARED_FOLDER, "");
+                uploadFileToSMB(host, sharedFolder, "", username, password);
             }
 
             // set scanned number to 0
@@ -1321,6 +1418,59 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
+    public void uploadFileToSMB(String hostname, String shareName, String domain,
+                                String username, String password) {
+        ExecutorService executor = Executors.newSingleThreadExecutor();
+        Handler mainHandler = new Handler(Looper.getMainLooper());
+
+        executor.execute(() -> {
+            try {
+                // SMB upload logic here
+                SMBClient client = new SMBClient();
+                try (Connection connection = client.connect(hostname)) {
+                    AuthenticationContext ac = new AuthenticationContext(username, password.toCharArray(), "");
+                    com.hierynomus.smbj.session.Session session = connection.authenticate(ac);
+                    DiskShare share = (DiskShare) session.connectShare(shareName);
+
+                    String fileName = getFileName();
+                    File dir = Utils.getDocumentsDirectory(this);
+                    File file = new File(dir, fileName);
+
+                    FileInputStream fis = new FileInputStream(file);
+                    OutputStream os = share.openFile(fileName,
+                            EnumSet.of(AccessMask.GENERIC_WRITE),
+                            null,
+                            SMB2ShareAccess.ALL,
+                            SMB2CreateDisposition.FILE_OVERWRITE_IF,
+                            null).getOutputStream();
+
+                    byte[] buffer = new byte[4096];
+                    int bytesRead;
+                    while ((bytesRead = fis.read(buffer)) != -1) {
+                        os.write(buffer, 0, bytesRead);
+                    }
+
+                    os.close();
+                    fis.close();
+                    share.close();
+                    session.close();
+                }
+
+                // Notify success on main thread
+                mainHandler.post(() -> {
+                    Toast.makeText(this, "Upload successful", Toast.LENGTH_SHORT).show();
+                    removeCurrentFile();
+                });
+
+            } catch (Exception e) {
+                e.printStackTrace();
+                mainHandler.post(() -> {
+                    Toast.makeText(this, "Upload failed: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                });
+            }
+        });
+    }
+
     private void removeCurrentFile() {
         File dir = Utils.getDocumentsDirectory(this);
         if (dir.exists() && dir.isDirectory()) {
@@ -1347,7 +1497,6 @@ public class MainActivity extends AppCompatActivity {
         editor.putInt(FILE_COUNTER, fileCounter);
         editor.putInt(SCANNED_NUMBER, 0);
         editor.apply();
-
 
     }
 }

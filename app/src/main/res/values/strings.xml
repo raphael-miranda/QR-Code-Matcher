@@ -28,9 +28,12 @@
     <string name="quit">Quit</string>
 
     <!--  Settings Dialog -->
-    <string name="settings_title">FTP Server</string>
-    <string name="host">FTP Server Address</string>
+    <string name="ftp_server">FTP Server</string>
+    <string name="smb_server">SMB Server</string>
+    <string name="ftp_server_address">FTP Server Address</string>
+    <string name="host_address">Host Address</string>
     <string name="port">Port</string>
+    <string name="shared_folder">Shared Folder</string>
     <string name="username">User Name</string>
     <string name="password">Password</string>
     <string name="save">Save</string>
