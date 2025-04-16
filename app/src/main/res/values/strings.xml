@@ -32,6 +32,7 @@
     <string name="smb_server">SMB Server</string>
     <string name="ftp_server_address">FTP Server Address</string>
     <string name="host_address">Host Address</string>
+    <string name="smb_address">Connect to Server</string>
     <string name="port">Port</string>
     <string name="shared_folder">Shared Folder</string>
     <string name="username">User Name</string>

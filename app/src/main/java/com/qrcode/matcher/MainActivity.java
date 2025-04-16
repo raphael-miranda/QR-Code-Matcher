@@ -342,7 +342,7 @@ public class MainActivity extends AppCompatActivity {
             txtPassword.setText(sharedPreferences.getString(FTP_PASSWORD, ""));
         } else if ("smb".equals(sharedPreferences.getString(SERVER_TYPE, "ftp"))) {
             toggleServerType.check(R.id.btnSMBServer);
-            fieldHostAddress.setHint(getString(R.string.ftp_server_address));
+            fieldHostAddress.setHint(getString(R.string.smb_address));
             fieldPort.setHint(getString(R.string.shared_folder));
             txtPortNumber.setInputType(InputType.TYPE_CLASS_TEXT);
             fieldUsername.setHint(getString(R.string.username));
@@ -377,7 +377,7 @@ public class MainActivity extends AppCompatActivity {
                         txtPassword.setText(sharedPreferences.getString(FTP_PASSWORD, ""));
                     }
                 } else if (checkedId == R.id.btnSMBServer) {
-                    fieldHostAddress.setHint(getString(R.string.host_address));
+                    fieldHostAddress.setHint(getString(R.string.smb_address));
                     fieldPort.setHint(getString(R.string.shared_folder));
                     txtPortNumber.setInputType(InputType.TYPE_CLASS_TEXT);
                     fieldUsername.setHint(getString(R.string.username));
