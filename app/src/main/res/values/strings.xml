@@ -10,7 +10,7 @@
     <string name="small_label">Small Label</string>
     <string name="big_label">Big Label</string>
 
-    <string name="manual">Manual</string>
+    <string name="manual">Manual Entry</string>
     <string name="scanned">Scanned</string>
     <string name="ct_nr">Ct.Nr</string>
     <string name="part_nr">PartNr</string>
@@ -38,6 +38,7 @@
     <string name="password">Password</string>
     <string name="save">Save</string>
     <string name="cancel">Cancel</string>
+    <string name="test_connection">Test Connection</string>
 
     <!-- Add label dialog -->
     <string name="add_label">Add label</string>

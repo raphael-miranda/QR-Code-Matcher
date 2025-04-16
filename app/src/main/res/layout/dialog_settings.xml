@@ -173,5 +173,14 @@
 
         </LinearLayout>
 
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnTestConnection"
+            android:layout_width="wrap_content"
+            android:layout_height="60dp"
+            android:layout_weight="1"
+            android:text="@string/test_connection"
+            android:textSize="18sp"
+            android:textAllCaps="false"/>
+
     </LinearLayout>
 </ScrollView>

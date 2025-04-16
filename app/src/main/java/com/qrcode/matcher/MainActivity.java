@@ -325,6 +325,7 @@ public class MainActivity extends AppCompatActivity {
 
         MaterialButton btnSave = dialogView.findViewById(R.id.btnSave);
         MaterialButton btnCancel = dialogView.findViewById(R.id.btnCancel);
+        MaterialButton btnTestConnection = dialogView.findViewById(R.id.btnTestConnection);
 
         SharedPreferences sharedPreferences = getSharedPreferences(getPackageName(), MODE_PRIVATE);
         if ("ftp".equals(sharedPreferences.getString(SERVER_TYPE, "ftp"))) {
@@ -426,6 +427,22 @@ public class MainActivity extends AppCompatActivity {
         });
 
         btnCancel.setOnClickListener(view -> dialog.dismiss());
+
+        btnTestConnection.setOnClickListener(view -> {
+            String hostAddress = txtHost.getText().toString();
+            String portNumber = txtPortNumber.getText().toString();
+            String username = txtUserName.getText().toString();
+            String password = txtPassword.getText().toString();
+
+            if (toggleServerType.getCheckedButtonId() == R.id.btnFtpServer) {
+                if (!portNumber.isEmpty()) {
+                    int port = Integer.parseInt(portNumber);
+                    testFtpConnection(hostAddress, port, username, password);
+                }
+            } else if (toggleServerType.getCheckedButtonId() == R.id.btnSMBServer) {
+                testSmbConnection(hostAddress, portNumber, username, password);
+            }
+        });
 
         dialog.show();
     }
@@ -1471,6 +1488,80 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
+    private void testFtpConnection(String host, int port, String username, String password) {
+
+        ExecutorService executor = Executors.newSingleThreadExecutor();
+        Handler handler = new Handler(Looper.getMainLooper());
+
+        executor.execute(() -> {
+            boolean success = false;
+
+            FTPClient ftpClient = new FTPClient();
+            try {
+                ftpClient.connect(host, port);
+                boolean login = ftpClient.login(username, password);
+
+                if (login) {
+                    // Optional: try to list files to confirm access
+                    ftpClient.enterLocalPassiveMode(); // avoid firewall issues
+                    ftpClient.listFiles(); // just to trigger access
+                    ftpClient.logout();
+                    success = true;
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            } finally {
+                if (ftpClient.isConnected()) {
+                    try {
+                        ftpClient.disconnect();
+                    } catch (IOException ex) {
+                        ex.printStackTrace();
+                    }
+                }
+            }
+
+            boolean finalSuccess = success;
+            handler.post(() -> {
+                if (finalSuccess) {
+                    showInformationDialog("Test Success", "Your FTP Server is available!");
+                } else {
+                    showInformationDialog("Test Failed", "Your FTP Server is unavailable!");
+                }
+            });
+        });
+    }
+
+    private void testSmbConnection(String serverIp, String shareName, String username, String password) {
+
+        ExecutorService executor = Executors.newSingleThreadExecutor();
+        Handler mainHandler = new Handler(Looper.getMainLooper());
+
+        executor.execute(() -> {
+            try {
+                // SMB upload logic here
+                SMBClient client = new SMBClient();
+                try (Connection connection = client.connect(serverIp)) {
+                    AuthenticationContext ac = new AuthenticationContext(username, password.toCharArray(), "");
+                    com.hierynomus.smbj.session.Session session = connection.authenticate(ac);
+                    DiskShare share = (DiskShare) session.connectShare(shareName);
+                    share.close();
+                    session.close();
+                }
+
+                // Notify success on main thread
+                mainHandler.post(() -> {
+                    showInformationDialog("Test Success", "Your SMB Server is available!");
+                });
+
+            } catch (Exception e) {
+                e.printStackTrace();
+                mainHandler.post(() -> {
+                    showInformationDialog("Test Failed", "Your SMB Server is unavailable!");
+                });
+            }
+        });
+    }
+
     private void removeCurrentFile() {
         File dir = Utils.getDocumentsDirectory(this);
         if (dir.exists() && dir.isDirectory()) {
@@ -1498,5 +1589,15 @@ public class MainActivity extends AppCompatActivity {
         editor.putInt(SCANNED_NUMBER, 0);
         editor.apply();
 
+    }
+
+    private void showInformationDialog(String title, String message) {
+        new MaterialAlertDialogBuilder(this)
+                .setTitle(title)
+                .setMessage(message)
+                .setNegativeButton("OK", (dialogInterface, i) -> {
+                    dialogInterface.dismiss();
+                })
+                .show();
     }
 }
